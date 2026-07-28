@@ -1,0 +1,6 @@
+{
+  "name": "NovaMind",
+  "description": "Akıllı Fikir & Medya Kütüphanesi - Video/makale linkleri, kişisel notlar, alışveriş listesi ve AI destekli Knowledge Graph/Fikir Üretici.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

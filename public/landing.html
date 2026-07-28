@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="tr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovaMind — Akıllı İkinci Beyin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0b0f19;
+        }
+        .font-serif-display {
+            font-family: 'Playfair Display', serif;
+        }
+        .glow-indigo {
+            box-shadow: 0 0 50px -12px rgba(99, 102, 241, 0.2);
+        }
+        .bubble-node {
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            transition: transform 0.1s ease, border-color 0.3s ease;
+        }
+        .bubble-node:active {
+            cursor: grabbing;
+            transform: scale(1.05);
+        }
+        .canvas-container {
+            overflow: hidden;
+        }
+        /* Sketch Style Details */
+        .sketch-card {
+            border: 2.5px solid #0f172a;
+            border-radius: 16px;
+            background-color: #ffffff;
+            box-shadow: 5px 5px 0px 0px #0f172a;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .sketch-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 7px 7px 0px 0px #0f172a;
+        }
+        .notebook-paper {
+            background-color: #faf6f0;
+            background-image: radial-gradient(#d1d5db 1.2px, transparent 1.2px);
+            background-size: 1.2rem 1.2rem;
+            border: 2.5px solid #0f172a;
+            box-shadow: 6px 6px 0px 0px #0f172a;
+        }
+    </style>
+</head>
+<body class="text-slate-300 min-h-screen overflow-x-hidden selection:bg-indigo-500/30 selection:text-white">
+
+    <!-- Background Grid Effect -->
+    <div class="absolute inset-0 bg-[linear-gradient(to_right,#1f293710_1px,transparent_1px),linear-gradient(to_bottom,#1f293710_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none"></div>
+
+    <!-- Navigation -->
+    <nav class="relative z-50 max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-indigo-900/40">
+                <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925 3.546 5.974 5.974 0 01-2.133-1A3.75 3.75 0 0012 18z"></path></svg>
+            </div>
+            <span class="text-lg font-bold tracking-tight text-white font-serif-display bg-gradient-to-r from-indigo-200 to-amber-200 bg-clip-text text-transparent">NovaMind</span>
+        </div>
+        <div class="flex items-center space-x-6 text-sm">
+            <a href="#features" class="hover:text-white transition-colors">Özellikler</a>
+            <a href="/app" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl shadow-md shadow-indigo-600/20 transition-all hover:scale-[1.02]">Panoya Git</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative max-w-5xl mx-auto px-6 pt-16 pb-12 text-center z-10">
+        <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold mb-6">
+            <span>Kişiye Özel Akıllı İkinci Beyin</span>
+        </span>
+        <h1 class="text-4xl md:text-6xl font-serif-display font-bold tracking-tight text-white mb-6 leading-tight">
+            Akıllı ve Görsel İkinci Beyniniz<br>
+            <span class="bg-gradient-to-r from-indigo-400 via-amber-300 to-amber-500 bg-clip-text text-transparent">NovaMind ile Fikirlerinizi Canlandırın.</span>
+        </h1>
+        <p class="text-lg text-slate-400 max-w-2xl mx-auto mb-10 font-light leading-relaxed">
+            Kaydettiğiniz her video, makale veya içerik anında yapay zeka ile otomatik zihin haritasına dönüşür.
+        </p>
+        <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+            <a href="/app" class="w-full sm:w-auto px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-600/30 transition-all hover:scale-[1.02] flex items-center justify-center space-x-2">
+                <span>Panoya Git</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"></path></svg>
+            </a>
+            <a href="#features" class="w-full sm:w-auto px-8 py-4 bg-slate-800/60 hover:bg-slate-800 text-slate-300 font-semibold rounded-2xl border border-slate-700 transition-all flex items-center justify-center">
+                <span>Nasıl Çalışır?</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Interactive Demonstration Area (Dual View & Scraper) -->
+    <section class="relative max-w-6xl mx-auto px-6 pb-20 z-10">
+        <!-- Live Link Analyzer / Scraper Demo Box -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 mb-8 shadow-xl">
+            <h3 class="text-white text-lg font-semibold mb-2 flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Çalışan Canlı Demo: Link Analiz Et</span>
+            </h3>
+            <p class="text-xs text-slate-400 mb-4">Gerçek bir web sitesi veya YouTube linki girin, arka plandaki NovaMind API'sinin OpenGraph ve yapay zeka meta-verilerini nasıl çıkardığını anında izleyin.</p>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <input id="demo-url-input" type="url" placeholder="https://example.com veya YouTube video adresi..." class="flex-1 px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-indigo-500 transition-all">
+                <button onclick="analyzeDemoLink()" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium text-sm rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-lg">
+                    <svg id="loader-icon" class="w-4 h-4 hidden animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <span>Analiz Et (AI)</span>
+                </button>
+            </div>
+            <!-- Dynamic Demo Card Container -->
+            <div id="demo-card-result" class="hidden mt-6 animate-in fade-in slide-in-from-bottom duration-300"></div>
+        </div>
+
+        <!-- Toggle Tabs for Dual View -->
+        <div class="flex items-center justify-center space-x-4 mb-6">
+            <button onclick="switchView('neural')" id="tab-btn-neural" class="px-5 py-2.5 rounded-xl font-medium text-sm border flex items-center gap-1.5 transition-all bg-indigo-600/30 text-indigo-200 border-indigo-500/40">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"></path></svg>
+                <span>Nöral Ağ Görünümü (Etkileşimli)</span>
+            </button>
+            <button onclick="switchView('notebook')" id="tab-btn-notebook" class="px-5 py-2.5 rounded-xl font-medium text-sm border flex items-center gap-1.5 transition-all text-slate-400 hover:text-slate-200 border-transparent hover:bg-slate-800/50">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.967 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"></path></svg>
+                <span>Fikir Defterim (Sketch Sürümü)</span>
+            </button>
+        </div>
+
+        <!-- MAIN VIEW CANVAS -->
+        <div class="bg-slate-900/50 rounded-3xl border border-slate-800 p-4 shadow-2xl glow-indigo relative overflow-hidden">
+            
+            <!-- VIEW 1: NEURAL NETWORK (Bubble Physics, Zoom & Draggable) -->
+            <div id="view-neural" class="block">
+                <div class="bg-[#0b0f19] rounded-2xl border border-slate-800/80 overflow-hidden relative min-h-[500px] p-6 canvas-container">
+                    
+                    <!-- Zoom & Reset Controls -->
+                    <div class="absolute top-4 right-4 z-30 flex flex-col gap-2">
+                        <button onclick="adjustZoom(0.1)" class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center font-bold text-sm shadow-md">+</button>
+                        <button onclick="adjustZoom(-0.1)" class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center font-bold text-sm shadow-md">-</button>
+                        <button onclick="resetZoom()" class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center font-bold text-xs shadow-md">↺</button>
+                    </div>
+
+                    <!-- Canvas Space containing the nodes -->
+                    <div id="interactive-space" class="relative w-full h-[400px] flex items-center justify-center transform origin-center transition-transform duration-200">
+                        
+                        <!-- SVG for connection lines -->
+                        <svg id="connection-svg" class="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+                            <line id="l-youtube" x1="0" y1="0" x2="0" y2="0" stroke="#6366f1" stroke-width="1.5" stroke-dasharray="3 3" class="opacity-40" />
+                            <line id="l-x" x1="0" y1="0" x2="0" y2="0" stroke="#6366f1" stroke-width="1.5" stroke-dasharray="3 3" class="opacity-40" />
+                            <line id="l-pdf" x1="0" y1="0" x2="0" y2="0" stroke="#6366f1" stroke-width="1.5" stroke-dasharray="3 3" class="opacity-40" />
+                            <line id="l-article" x1="0" y1="0" x2="0" y2="0" stroke="#6366f1" stroke-width="1.5" stroke-dasharray="3 3" class="opacity-40" />
+                            <line id="l-idea" x1="0" y1="0" x2="0" y2="0" stroke="#6366f1" stroke-width="1.5" stroke-dasharray="3 3" class="opacity-40" />
+                            
+                            <!-- Sub-connections for collapsible nodes -->
+                            <line id="l-sub1" x1="0" y1="0" x2="0" y2="0" stroke="#f59e0b" stroke-width="1.2" class="opacity-0 transition-opacity duration-300" />
+                            <line id="l-sub2" x1="0" y1="0" x2="0" y2="0" stroke="#f59e0b" stroke-width="1.2" class="opacity-0 transition-opacity duration-300" />
+                        </svg>
+
+                        <!-- Central Core Node -->
+                        <div id="node-center" class="bubble-node absolute w-24 h-24 rounded-full bg-gradient-to-tr from-indigo-600 via-indigo-500 to-amber-500 flex flex-col items-center justify-center text-white shadow-xl shadow-indigo-500/20 z-20"
+                             style="left: calc(50% - 48px); top: calc(50% - 48px);">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925 3.546 5.974 5.974 0 01-2.133-1A3.75 3.75 0 0012 18z"></path></svg>
+                            <div class="absolute -bottom-8 bg-slate-900 border border-slate-700 px-3 py-1 rounded-full whitespace-nowrap">
+                                <span class="text-[10px] font-bold text-slate-200">NovaMind Zihin Merkezi</span>
+                            </div>
+                        </div>
+
+                        <!-- Platforms (Outer Draggable Nodes) -->
+                        <div id="node-youtube" class="bubble-node absolute w-16 h-16 rounded-full bg-slate-900 border-[3px] border-red-500 flex items-center justify-center text-slate-100 shadow-[0_0_20px_rgba(239,68,68,0.3)] z-10" style="left: 15%; top: 20%;" onmouseover="showDetails('youtube')" onmouseout="hideDetails()" onclick="openPreviewModal('youtube')">
+                            <div class="w-6 h-6 rounded-full bg-white"></div>
+                            <div class="absolute -top-2 -right-2 bg-emerald-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">+1</div>
+                            <div class="absolute -bottom-8 bg-slate-900 border border-slate-700 px-3 py-1 rounded-full whitespace-nowrap">
+                                <span class="text-[10px] font-bold text-slate-200">Yazılım & AI</span>
+                            </div>
+                        </div>
+
+                        <div id="node-x" class="bubble-node absolute w-16 h-16 rounded-full bg-slate-900 border-[3px] border-sky-500 flex items-center justify-center text-slate-100 shadow-[0_0_20px_rgba(14,165,233,0.3)] z-10" style="left: 80%; top: 25%;" onmouseover="showDetails('x')" onmouseout="hideDetails()" onclick="openPreviewModal('threads')">
+                            <div class="w-6 h-6 rounded-full bg-white"></div>
+                            <div class="absolute -top-2 -right-2 bg-emerald-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">+1</div>
+                            <div class="absolute -bottom-8 bg-slate-900 border border-slate-700 px-3 py-1 rounded-full whitespace-nowrap">
+                                <span class="text-[10px] font-bold text-slate-200">Üretkenlik & Tasarım</span>
+                            </div>
+                        </div>
+
+                        <div id="node-pdf" class="bubble-node absolute w-16 h-16 rounded-full bg-slate-900 border-[3px] border-emerald-500 flex items-center justify-center text-slate-100 shadow-[0_0_20px_rgba(16,185,129,0.3)] z-10" style="left: 20%; top: 70%;" onmouseover="showDetails('pdf')" onmouseout="hideDetails()" onclick="openPreviewModal('pdf')">
+                            <div class="w-6 h-6 rounded-full bg-white"></div>
+                            <div class="absolute -top-2 -right-2 bg-emerald-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">+1</div>
+                            <div class="absolute -bottom-8 bg-slate-900 border border-slate-700 px-3 py-1 rounded-full whitespace-nowrap">
+                                <span class="text-[10px] font-bold text-slate-200">Akademik & AI</span>
+                            </div>
+                        </div>
+
+                        <div id="node-article" class="bubble-node absolute w-16 h-16 rounded-full bg-slate-900 border-[3px] border-pink-500 flex items-center justify-center text-slate-100 shadow-[0_0_20px_rgba(236,72,153,0.3)] z-10" style="left: 75%; top: 75%;" onmouseover="showDetails('article')" onmouseout="hideDetails()" onclick="openPreviewModal('pinterest')">
+                            <div class="w-6 h-6 rounded-full bg-white"></div>
+                            <div class="absolute -top-2 -right-2 bg-emerald-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">+1</div>
+                            <div class="absolute -bottom-8 bg-slate-900 border border-slate-700 px-3 py-1 rounded-full whitespace-nowrap">
+                                <span class="text-[10px] font-bold text-slate-200">Tasarım & Stil</span>
+                            </div>
+                        </div>
+
+                        <!-- Clickable / Expandable Node: Sentez Fikir -->
+                        <div id="node-idea" onclick="toggleCollapsibleNode()" class="bubble-node absolute w-16 h-16 rounded-full bg-slate-900 border-2 border-indigo-500/50 flex flex-col items-center justify-center text-indigo-300 shadow-lg shadow-indigo-500/10 z-10" style="left: 48%; top: 12%;" onmouseover="showDetails('idea')" onmouseout="hideDetails()">
+                            <svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925 3.546 5.974 5.974 0 01-2.133-1A3.75 3.75 0 0012 18z"></path></svg>
+                            <span class="text-[8px] font-bold tracking-tight uppercase text-indigo-400">Expand</span>
+                        </div>
+
+                        <!-- Collapsible Sub-Nodes (Hidden by default, open/close with transition) -->
+                        <div id="node-sub1" class="absolute w-10 h-10 rounded-full bg-slate-950 border border-amber-500/30 text-amber-300 flex items-center justify-center opacity-0 scale-0 pointer-events-none transition-all duration-300 z-10" style="left: 35%; top: 5%;">
+                            <span class="text-[9px] font-bold">Blog</span>
+                        </div>
+                        <div id="node-sub2" class="absolute w-10 h-10 rounded-full bg-slate-950 border border-amber-500/30 text-amber-300 flex items-center justify-center opacity-0 scale-0 pointer-events-none transition-all duration-300 z-10" style="left: 60%; top: 5%;">
+                            <span class="text-[9px] font-bold">Plan</span>
+                        </div>
+
+                    </div>
+
+                    <!-- Bottom Tooltip card inside Neural -->
+                    <div id="dynamic-tooltip" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-slate-950/90 border border-slate-800 rounded-2xl px-6 py-4 max-w-md text-center shadow-2xl z-30 transition-all duration-300">
+                        <p id="tooltip-text" class="text-xs text-slate-300 leading-relaxed font-light">
+                            <strong>Düğümleri Sürükleyin & Sentez Fikre tıklayıp genişletin!</strong><br><span class="text-[11px] text-slate-400">Mouse tekerleği veya yandaki butonlarla yakınlaştırma (zoom) yapabilirsiniz.</span>
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- VIEW 2: NOTEBOOK TEMPLATE (Clean Card and Bookmark Style) -->
+            <div id="view-notebook" class="hidden">
+                <!-- Exact reproduction of original app sketch-notebook look -->
+                <div class="notebook-paper rounded-3xl p-6 md:p-8 min-h-[500px] text-slate-900">
+                    
+                    <!-- Spiral Binder Ring Emulation -->
+                    <div class="flex items-center space-x-2.5 mb-6 pl-2 border-b border-slate-300/80 pb-3">
+                        <div class="flex space-x-1.5">
+                            <div class="w-3.5 h-3.5 rounded-full bg-slate-800 border-[1.5px] border-slate-950"></div>
+                            <div class="w-3.5 h-3.5 rounded-full bg-slate-800 border-[1.5px] border-slate-950"></div>
+                            <div class="w-3.5 h-3.5 rounded-full bg-slate-800 border-[1.5px] border-slate-950"></div>
+                            <div class="w-3.5 h-3.5 rounded-full bg-slate-800 border-[1.5px] border-slate-950"></div>
+                            <div class="w-3.5 h-3.5 rounded-full bg-slate-800 border-[1.5px] border-slate-950"></div>
+                            <div class="w-3.5 h-3.5 rounded-full bg-slate-800 border-[1.5px] border-slate-950"></div>
+                        </div>
+                        <h3 class="text-xl md:text-2xl font-serif-display font-semibold tracking-tight text-slate-900 ml-3 flex items-center gap-1.5">
+                            <span>Fikir Defterim</span>
+                            <span>✏️</span>
+                        </h3>
+                    </div>
+
+                    <!-- Search Bar and Dropdowns mimicking the exact sketch screen -->
+                    <div class="flex flex-col md:flex-row gap-3 mb-8">
+                        <div class="flex-1 relative">
+                            <input type="text" placeholder="Defterde not veya fikir ara..." readonly class="w-full px-4 py-2.5 bg-white border-2 border-slate-900 rounded-xl text-xs text-slate-600 focus:outline-none cursor-not-allowed">
+                        </div>
+                        <div class="flex gap-2">
+                            <select disabled class="px-3 py-2 bg-white border-2 border-slate-900 rounded-xl text-xs text-slate-700 font-medium cursor-not-allowed">
+                                <option>Tüm Bağlantılar</option>
+                            </select>
+                            <select disabled class="px-3 py-2 bg-white border-2 border-slate-900 rounded-xl text-xs text-slate-700 font-medium cursor-not-allowed">
+                                <option>Tüm Kategoriler</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Showcase Cards Grid (Includes Tiktok, Instagram, Youtube, Pinterest, Threads, PDF) -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        
+                        <!-- Notebook Card 1 (YouTube) -->
+                        <div class="sketch-card p-4 flex flex-col justify-between relative">
+                            <div class="absolute -top-3 left-4 px-2.5 py-0.5 rounded bg-[#f43f5e] text-white border-[1.5px] border-slate-900 text-[10px] font-bold tracking-wide shadow-sm flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                <span>YouTube</span>
+                            </div>
+                            <span class="absolute top-3.5 right-3.5 text-slate-500 text-sm">📎</span>
+                            
+                            <div class="pt-2">
+                                <span class="inline-block px-2 py-0.5 border border-slate-900 rounded text-[9px] font-bold text-slate-700 bg-slate-100 mb-3">Yazılım & AI</span>
+                                <img onclick="openPreviewModal('youtube')" src="https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=500&q=80" alt="Card Preview" class="w-full h-28 object-cover rounded-lg border-2 border-slate-900 mb-3 cursor-pointer hover:opacity-90 transition-opacity">
+                                <h4 class="font-bold text-xs text-slate-900 leading-tight mb-2">10 Dakikada AI Destekli Web Uygulamaları Geliştirme</h4>
+                                
+                                <div class="bg-amber-100/50 border-2 border-dashed border-amber-400 rounded-xl p-2.5 my-3 text-[11px] text-slate-700 italic">
+                                    <span class="block font-bold text-[9px] uppercase tracking-wide text-amber-800 not-italic mb-0.5">✍️ SİZİN NOTUNUZ:</span>
+                                    "Bu videodaki prompt mühendisliği şablonunu yeni mikro-SaaS projemde denemeliyim."
+                                </div>
+                            </div>
+
+                            <div class="border-t border-slate-200 pt-2 flex items-center justify-between mt-1.5">
+                                <span class="text-[9px] text-slate-400 font-medium">📅 25 Tem 2026</span>
+                                <button onclick="openPreviewModal('youtube')" class="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-0.5 cursor-pointer">Aç & İncele 👁️</button>
+                            </div>
+                        </div>
+
+                        <!-- Notebook Card 2 (TikTok) -->
+                        <div class="sketch-card p-4 flex flex-col justify-between relative">
+                            <div class="absolute -top-3 left-4 px-2.5 py-0.5 rounded bg-[#010101] text-white border-[1.5px] border-slate-900 text-[10px] font-bold tracking-wide shadow-sm flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                <span>TikTok</span>
+                            </div>
+                            <span class="absolute top-3.5 right-3.5 text-slate-500 text-sm">📎</span>
+
+                            <div class="pt-2">
+                                <span class="inline-block px-2 py-0.5 border border-slate-900 rounded text-[9px] font-bold text-slate-700 bg-slate-100 mb-3">Tasarım & Trend</span>
+                                <img onclick="openPreviewModal('tiktok')" src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=500&q=80" alt="Card Preview" class="w-full h-28 object-cover rounded-lg border-2 border-slate-900 mb-3 cursor-pointer hover:opacity-90 transition-opacity">
+                                <h4 class="font-bold text-xs text-slate-900 leading-tight mb-2">CSS Grid ile Gelişmiş Responsive Galeri Yapımı</h4>
+                                
+                                <div class="bg-amber-100/50 border-2 border-dashed border-amber-400 rounded-xl p-2.5 my-3 text-[11px] text-slate-700 italic">
+                                    <span class="block font-bold text-[9px] uppercase tracking-wide text-amber-800 not-italic mb-0.5">✍️ SİZİN NOTUNUZ:</span>
+                                    "Zihin haritalama arayüzündeki kartların esnek yerleşimi için bu grid formülü mükemmel."
+                                </div>
+                            </div>
+
+                            <div class="border-t border-slate-200 pt-2 flex items-center justify-between mt-1.5">
+                                <span class="text-[9px] text-slate-400 font-medium">📅 24 Tem 2026</span>
+                                <button onclick="openPreviewModal('tiktok')" class="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-0.5 cursor-pointer">Aç & İncele 👁️</button>
+                            </div>
+                        </div>
+
+                        <!-- Notebook Card 3 (Instagram) -->
+                        <div class="sketch-card p-4 flex flex-col justify-between relative">
+                            <div class="absolute -top-3 left-4 px-2.5 py-0.5 rounded bg-[#e1306c] text-white border-[1.5px] border-slate-900 text-[10px] font-bold tracking-wide shadow-sm flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                <span>Instagram</span>
+                            </div>
+                            <span class="absolute top-3.5 right-3.5 text-slate-500 text-sm">📎</span>
+
+                            <div class="pt-2">
+                                <span class="inline-block px-2 py-0.5 border border-slate-900 rounded text-[9px] font-bold text-slate-700 bg-slate-100 mb-3">Tasarım & Stil</span>
+                                <img onclick="openPreviewModal('instagram')" src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=500&q=80" alt="Card Preview" class="w-full h-28 object-cover rounded-lg border-2 border-slate-900 mb-3 cursor-pointer hover:opacity-90 transition-opacity">
+                                <h4 class="font-bold text-xs text-slate-900 leading-tight mb-2">Japandi Stil Ev Dekorasyon Fikirleri</h4>
+                                
+                                <div class="bg-amber-100/50 border-2 border-dashed border-amber-400 rounded-xl p-2.5 my-3 text-[11px] text-slate-700 italic">
+                                    <span class="block font-bold text-[9px] uppercase tracking-wide text-amber-800 not-italic mb-0.5">✍️ SİZİN NOTUNUZ:</span>
+                                    "Ahşap modülleri zihin haritamıza 'Ahşap İlham' düğümü olarak bağladım."
+                                </div>
+                            </div>
+
+                            <div class="border-t border-slate-200 pt-2 flex items-center justify-between mt-1.5">
+                                <span class="text-[9px] text-slate-400 font-medium">📅 23 Tem 2026</span>
+                                <button onclick="openPreviewModal('instagram')" class="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-0.5 cursor-pointer">Aç & İncele 👁️</button>
+                            </div>
+                        </div>
+
+                        <!-- Notebook Card 4 (Pinterest) -->
+                        <div class="sketch-card p-4 flex flex-col justify-between relative">
+                            <div class="absolute -top-3 left-4 px-2.5 py-0.5 rounded bg-[#bd081c] text-white border-[1.5px] border-slate-900 text-[10px] font-bold tracking-wide shadow-sm flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                <span>Pinterest</span>
+                            </div>
+                            <span class="absolute top-3.5 right-3.5 text-slate-500 text-sm">📎</span>
+
+                            <div class="pt-2">
+                                <span class="inline-block px-2 py-0.5 border border-slate-900 rounded text-[9px] font-bold text-slate-700 bg-slate-100 mb-3">İlham & Çalışma Alanı</span>
+                                <img onclick="openPreviewModal('pinterest')" src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=500&q=80" alt="Card Preview" class="w-full h-28 object-cover rounded-lg border-2 border-slate-900 mb-3 cursor-pointer hover:opacity-90 transition-opacity">
+                                <h4 class="font-bold text-xs text-slate-900 leading-tight mb-2">Aesthetic Desk Setup Inspiration Board</h4>
+                                
+                                <div class="bg-amber-100/50 border-2 border-dashed border-amber-400 rounded-xl p-2.5 my-3 text-[11px] text-slate-700 italic">
+                                    <span class="block font-bold text-[9px] uppercase tracking-wide text-amber-800 not-italic mb-0.5">✍️ SİZİN NOTUNUZ:</span>
+                                    "Monitör arkası LED şerit aydınlatması ve minimal masa matı düzeni harika."
+                                </div>
+                            </div>
+
+                            <div class="border-t border-slate-200 pt-2 flex items-center justify-between mt-1.5">
+                                <span class="text-[9px] text-slate-400 font-medium">📅 22 Tem 2026</span>
+                                <button onclick="openPreviewModal('pinterest')" class="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-0.5 cursor-pointer">Aç & İncele 👁️</button>
+                            </div>
+                        </div>
+
+                        <!-- Notebook Card 5 (Threads) -->
+                        <div class="sketch-card p-4 flex flex-col justify-between relative">
+                            <div class="absolute -top-3 left-4 px-2.5 py-0.5 rounded bg-[#4f46e5] text-white border-[1.5px] border-slate-900 text-[10px] font-bold tracking-wide shadow-sm flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                <span>Threads</span>
+                            </div>
+                            <span class="absolute top-3.5 right-3.5 text-slate-500 text-sm">📎</span>
+
+                            <div class="pt-2">
+                                <span class="inline-block px-2 py-0.5 border border-slate-900 rounded text-[9px] font-bold text-slate-700 bg-slate-100 mb-3">İş & Girişim</span>
+                                <img onclick="openPreviewModal('threads')" src="https://images.unsplash.com/photo-1542744094-3a31f103e35f?auto=format&fit=crop&w=500&q=80" alt="Card Preview" class="w-full h-28 object-cover rounded-lg border-2 border-slate-900 mb-3 cursor-pointer hover:opacity-90 transition-opacity">
+                                <h4 class="font-bold text-xs text-slate-900 leading-tight mb-2">SaaS Lansmanında İlk 1000 Müşteriyi Kazanma Rehberi</h4>
+                                
+                                <div class="bg-amber-100/50 border-2 border-dashed border-amber-400 rounded-xl p-2.5 my-3 text-[11px] text-slate-700 italic">
+                                    <span class="block font-bold text-[9px] uppercase tracking-wide text-amber-800 not-italic mb-0.5">✍️ SİZİN NOTUNUZ:</span>
+                                    "Reddit ve dikey topluluk kanallarını tarama formülü çok mantıklı."
+                                </div>
+                            </div>
+
+                            <div class="border-t border-slate-200 pt-2 flex items-center justify-between mt-1.5">
+                                <span class="text-[9px] text-slate-400 font-medium">📅 21 Tem 2026</span>
+                                <button onclick="openPreviewModal('threads')" class="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-0.5 cursor-pointer">Aç & İncele 👁️</button>
+                            </div>
+                        </div>
+
+                        <!-- Notebook Card 6 (PDF) -->
+                        <div class="sketch-card p-4 flex flex-col justify-between relative">
+                            <div class="absolute -top-3 left-4 px-2.5 py-0.5 rounded bg-[#10b981] text-white border-[1.5px] border-slate-900 text-[10px] font-bold tracking-wide shadow-sm flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                <span>PDF Makale</span>
+                            </div>
+                            <span class="absolute top-3.5 right-3.5 text-slate-500 text-sm">📎</span>
+
+                            <div class="pt-2">
+                                <span class="inline-block px-2 py-0.5 border border-slate-900 rounded text-[9px] font-bold text-slate-700 bg-slate-100 mb-3">Akademik & AI</span>
+                                <img onclick="openPreviewModal('pdf')" src="https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=500&q=80" alt="Card Preview" class="w-full h-28 object-cover rounded-lg border-2 border-slate-900 mb-3 cursor-pointer hover:opacity-90 transition-opacity">
+                                <h4 class="font-bold text-xs text-slate-900 leading-tight mb-2">RAG (Retrieval-Augmented Generation) Altyapı Makalesi</h4>
+                                
+                                <div class="bg-amber-100/50 border-2 border-dashed border-amber-400 rounded-xl p-2.5 my-3 text-[11px] text-slate-700 italic">
+                                    <span class="block font-bold text-[9px] uppercase tracking-wide text-amber-800 not-italic mb-0.5">✍️ SİZİN NOTUNUZ:</span>
+                                    "Hybrid search (vektör + FTS) detaylarını zihin haritama ekledim."
+                                </div>
+                            </div>
+
+                            <div class="border-t border-slate-200 pt-2 flex items-center justify-between mt-1.5">
+                                <span class="text-[9px] text-slate-400 font-medium">📅 20 Tem 2026</span>
+                                <button onclick="openPreviewModal('pdf')" class="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-0.5 cursor-pointer">Aç & İncele 👁️</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Interactive Preview Modal Overlay (Simulated App Preview) -->
+    <div id="preview-modal-overlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white border-2 border-slate-900 max-w-4xl w-full rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh] text-slate-900 relative">
+            
+            <!-- Close Modal Button -->
+            <button onclick="closePreviewModal()" class="absolute top-4 right-4 z-50 bg-slate-100 hover:bg-slate-200 border border-slate-900/10 text-slate-600 p-2 rounded-full transition-all">
+                ✕
+            </button>
+
+            <!-- Left Panel: Content Embed or PDF Preview -->
+            <div class="w-full md:w-3/5 bg-slate-950 flex flex-col items-center justify-center min-h-[300px] md:min-h-[450px] relative border-b md:border-b-0 md:border-r border-slate-900">
+                <div id="embed-target" class="w-full h-full flex items-center justify-center">
+                    <!-- Dynamic embed is injected here -->
+                </div>
+            </div>
+
+            <!-- Right Panel: AI summary and notes -->
+            <div class="w-full md:w-2/5 p-6 flex flex-col justify-between overflow-y-auto max-h-[45vh] md:max-h-[90vh]">
+                <div>
+                    <div class="flex items-center gap-2 mb-3">
+                        <span id="modal-platform" class="px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider text-white">Platform</span>
+                        <span id="modal-category" class="px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-900/10">Kategori</span>
+                    </div>
+                    
+                    <h3 id="modal-title" class="font-serif-display font-bold text-lg text-slate-900 mb-2 leading-tight">İçerik Başlığı</h3>
+                    <p class="text-xs text-slate-400 mb-4" id="modal-date">Eklenme Tarihi</p>
+
+                    <div class="border-t border-slate-100 pt-4 mb-4">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-600 mb-1.5">🤖 NovaMind AI Analizi</h4>
+                        <p id="modal-summary" class="text-xs text-slate-600 leading-relaxed font-light mb-3">Yapay zeka özet metni buraya yüklenecek.</p>
+                        
+                        <h5 class="text-[11px] font-bold text-slate-800 mb-1">🔑 Önemli Çıkarımlar:</h5>
+                        <ul id="modal-takeaways" class="text-xs text-slate-600 space-y-1 pl-4 list-disc font-light mb-4">
+                            <!-- Bullet points -->
+                        </ul>
+                    </div>
+
+                    <!-- User Note Section -->
+                    <div class="bg-amber-50 border-2 border-dashed border-amber-300 rounded-xl p-3 text-xs italic text-slate-700">
+                        <span class="block font-bold text-[9px] uppercase tracking-wide text-amber-800 not-italic mb-1">✍️ SİZİN NOTUNUZ:</span>
+                        <p id="modal-user-note">Kişisel not.</p>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-100 pt-4 mt-4 flex items-center justify-between">
+                    <div id="modal-tags" class="flex flex-wrap gap-1">
+                        <!-- Tags -->
+                    </div>
+                    <span class="text-[10px] font-mono text-slate-400">NovaMind AI Engine</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Features Section (Simplified Problem & Solution for 40+ Demographics) -->
+    <section id="features" class="max-w-6xl mx-auto px-6 py-20 border-t border-slate-900">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl font-serif-display font-semibold text-white mb-3">Bilgi Karmaşasına Son Verin</h2>
+            <p class="text-sm text-slate-400 max-w-xl mx-auto font-light">Günlük koşturmacada kaydettiğiniz ama bir daha asla bakmadığınız içerikleri sizin için işleyen akıllı bir yardımcı.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            <!-- Feature 1: Chaos vs Organization -->
+            <div class="bg-slate-900/40 p-8 rounded-2xl border border-slate-800 hover:border-slate-700/80 transition-all duration-300 flex flex-col justify-between">
+                <div>
+                    <!-- Visual Graphic 1: Disordered vs Connected -->
+                    <div class="w-full h-32 bg-slate-950/60 rounded-xl border border-slate-800/60 mb-6 flex items-center justify-center relative overflow-hidden">
+                        <svg class="w-full h-full" viewBox="0 0 200 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Left: Chaos -->
+                            <circle cx="25" cy="30" r="3" fill="#ef4444" class="opacity-60" />
+                            <circle cx="45" cy="70" r="2.5" fill="#ef4444" class="opacity-60" />
+                            <circle cx="60" cy="25" r="4" fill="#ef4444" class="opacity-60" />
+                            <circle cx="30" cy="60" r="3.5" fill="#ef4444" class="opacity-60" />
+                            <text x="42" y="90" fill="#94a3b8" font-size="8" text-anchor="middle">Dağınık Linkler</text>
+                            
+                            <!-- Middle divider -->
+                            <line x1="100" y1="15" x2="100" y2="85" stroke="#1e293b" stroke-dasharray="2 2" />
+                            <path d="M96 45 L100 50 L96 55" stroke="#4f46e5" stroke-width="1.5" fill="none" />
+
+                            <!-- Right: Organization -->
+                            <circle cx="140" cy="50" r="4" fill="#4f46e5" />
+                            <circle cx="170" cy="30" r="3" fill="#6366f1" />
+                            <circle cx="175" cy="70" r="3" fill="#6366f1" />
+                            <line x1="140" y1="50" x2="170" y2="30" stroke="#4f46e5" stroke-width="1.2" />
+                            <line x1="140" y1="50" x2="175" y2="70" stroke="#4f46e5" stroke-width="1.2" />
+                            <text x="157" y="90" fill="#a5b4fc" font-size="8" text-anchor="middle">Düzenli Akıl Haritası</text>
+                        </svg>
+                    </div>
+                    
+                    <h3 class="text-white text-lg font-semibold mb-2">1. Unutma & Kaybolma Sorunu</h3>
+                    <p class="text-slate-400 text-xs font-light leading-relaxed mb-4">
+                        <strong class="text-red-400/90 font-medium">Sorun:</strong> Tarayıcı sekmelerinde, telefon notlarında biriken düzinelerce linki bir süre sonra bulamıyor veya tamamen unutuyorsunuz.<br class="mb-2">
+                        <strong class="text-emerald-400 font-medium">Çözüm:</strong> Kaydettiğiniz her bilgi tek bir görsel kütüphanede toplanır. Yapay zeka, konuları anlamsal olarak gruplar ve kaybolmalarını önler.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Feature 2: Time Waste vs AI Summary -->
+            <div class="bg-slate-900/40 p-8 rounded-2xl border border-slate-800 hover:border-slate-700/80 transition-all duration-300 flex flex-col justify-between">
+                <div>
+                    <!-- Visual Graphic 2: Long Doc vs Clean Summary -->
+                    <div class="w-full h-32 bg-slate-950/60 rounded-xl border border-slate-800/60 mb-6 flex items-center justify-center relative overflow-hidden">
+                        <svg class="w-full h-full" viewBox="0 0 200 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Left: Long Text -->
+                            <rect x="20" y="20" width="50" height="6" rx="2" fill="#334155" />
+                            <rect x="20" y="32" width="50" height="6" rx="2" fill="#334155" />
+                            <rect x="20" y="44" width="40" height="6" rx="2" fill="#334155" />
+                            <rect x="20" y="56" width="50" height="6" rx="2" fill="#334155" />
+                            <rect x="20" y="68" width="30" height="6" rx="2" fill="#334155" />
+                            <text x="45" y="90" fill="#94a3b8" font-size="8" text-anchor="middle">Saatler Süren Okuma</text>
+
+                            <!-- Middle divider -->
+                            <line x1="100" y1="15" x2="100" y2="85" stroke="#1e293b" stroke-dasharray="2 2" />
+
+                            <!-- Right: Clean Summary -->
+                            <rect x="130" y="25" width="50" height="8" rx="2" fill="#fbbf24" class="opacity-20" />
+                            <path d="M136 29 L138 31 L144 27" stroke="#fbbf24" stroke-width="1.5" fill="none" />
+                            <rect x="148" y="27" width="28" height="4" rx="1" fill="#fbbf24" />
+
+                            <rect x="130" y="45" width="50" height="8" rx="2" fill="#fbbf24" class="opacity-20" />
+                            <path d="M136 49 L138 51 L144 47" stroke="#fbbf24" stroke-width="1.5" fill="none" />
+                            <rect x="148" y="47" width="28" height="4" rx="1" fill="#fbbf24" />
+
+                            <rect x="130" y="65" width="50" height="8" rx="2" fill="#fbbf24" class="opacity-20" />
+                            <path d="M136 69 L138 71 L144 67" stroke="#fbbf24" stroke-width="1.5" fill="none" />
+                            <rect x="148" y="67" width="28" height="4" rx="1" fill="#fbbf24" />
+                            <text x="155" y="90" fill="#fde047" font-size="8" text-anchor="middle">1 Dakikalık Net Özet</text>
+                        </svg>
+                    </div>
+
+                    <h3 class="text-white text-lg font-semibold mb-2">2. Vakit Kaybı Sorunu</h3>
+                    <p class="text-slate-400 text-xs font-light leading-relaxed mb-4">
+                        <strong class="text-red-400/90 font-medium">Sorun:</strong> İlginizi çeken uzun bir makaleyi okumaya ya da 1 saatlik bir YouTube videosunu izlemeye vaktiniz yok.<br class="mb-2">
+                        <strong class="text-emerald-400 font-medium">Çözüm:</strong> Yapay zeka, içeriği saniyeler içinde tarayarak size 1 dakikada okuyabileceğiniz en net kilit çıkarımları ve özetleri çıkartır.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Feature 3: Disconnected Thoughts vs MindMap Synthesis -->
+            <div class="bg-slate-900/40 p-8 rounded-2xl border border-slate-800 hover:border-slate-700/80 transition-all duration-300 flex flex-col justify-between">
+                <div>
+                    <!-- Visual Graphic 3: Synthesis of Thoughts -->
+                    <div class="w-full h-32 bg-slate-950/60 rounded-xl border border-slate-800/60 mb-6 flex items-center justify-center relative overflow-hidden">
+                        <svg class="w-full h-full" viewBox="0 0 200 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Floating unconnected thoughts -->
+                            <rect x="20" y="20" width="35" height="12" rx="3" fill="#334155" />
+                            <text x="37.5" y="28" fill="#94a3b8" font-size="6" text-anchor="middle">Fikir A</text>
+
+                            <rect x="15" y="55" width="35" height="12" rx="3" fill="#334155" />
+                            <text x="32.5" y="63" fill="#94a3b8" font-size="6" text-anchor="middle">Fikir B</text>
+
+                            <!-- Middle divider -->
+                            <line x1="100" y1="15" x2="100" y2="85" stroke="#1e293b" stroke-dasharray="2 2" />
+
+                            <!-- Synthesized Output -->
+                            <circle cx="150" cy="45" r="14" fill="#10b981" class="opacity-20 animate-pulse" />
+                            <path d="M150 36 L153 43 L161 43 L155 47 L157 54 L150 50 L143 54 L145 47 L139 43 L147 43 Z" fill="#34d399" />
+                            <text x="150" y="80" fill="#34d399" font-size="8" text-anchor="middle" font-weight="bold">Yeni Sentez Fikir!</text>
+                        </svg>
+                    </div>
+
+                    <h3 class="text-white text-lg font-semibold mb-2">3. Bağlantı Kuramama Sorunu</h3>
+                    <p class="text-slate-400 text-xs font-light leading-relaxed mb-4">
+                        <strong class="text-red-400/90 font-medium">Sorun:</strong> Farklı zamanlarda kaydettiğiniz değerli bilgilerin aralarındaki ortak noktaları ve saklı fırsatları göremiyorsunuz.<br class="mb-2">
+                        <strong class="text-emerald-400 font-medium">Çözüm:</strong> Zihin Haritası (Knowledge Graph) ile tüm verileriniz görsel bağlarla birbirine kenetlenir. Çapraz eşleşmeyle size özel yepyeni fikirler sentezlenir.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-900 py-12 text-center text-xs text-slate-500">
+        <p>© 2026 NovaMind. Tüm hakları saklıdır. Verileriniz tamamen güvendedir.</p>
+    </footer>
+
+    <!-- INTERACTIVE ENGINE JAVASCRIPT -->
+    <script>
+        // --- 1. VIEW SWITCHING ---
+        function switchView(view) {
+            const neuralTab = document.getElementById("tab-btn-neural");
+            const notebookTab = document.getElementById("tab-btn-notebook");
+            const neuralView = document.getElementById("view-neural");
+            const notebookView = document.getElementById("view-notebook");
+
+            if (view === 'neural') {
+                neuralView.classList.remove("hidden");
+                notebookView.classList.add("hidden");
+                neuralTab.className = "px-5 py-2.5 rounded-xl font-medium text-sm border flex items-center gap-1.5 transition-all bg-indigo-600/30 text-indigo-200 border-indigo-500/40";
+                notebookTab.className = "px-5 py-2.5 rounded-xl font-medium text-sm border flex items-center gap-1.5 transition-all text-slate-400 hover:text-slate-200 border-transparent hover:bg-slate-800/50";
+                updateLines();
+            } else {
+                neuralView.classList.add("hidden");
+                notebookView.classList.remove("hidden");
+                notebookTab.className = "px-5 py-2.5 rounded-xl font-medium text-sm border flex items-center gap-1.5 transition-all bg-indigo-600/30 text-indigo-200 border-indigo-500/40";
+                neuralTab.className = "px-5 py-2.5 rounded-xl font-medium text-sm border flex items-center gap-1.5 transition-all text-slate-400 hover:text-slate-200 border-transparent hover:bg-slate-800/50";
+            }
+        }
+
+        // --- 2. LIVE METADATA SCRAPER DEMO WITH DYNAMIC NEURAL NODE INJECTION ---
+        async function analyzeDemoLink() {
+            const urlInput = document.getElementById("demo-url-input");
+            const loaderIcon = document.getElementById("loader-icon");
+            const resultDiv = document.getElementById("demo-card-result");
+            const url = urlInput.value.trim();
+
+            if (!url) {
+                alert("Lütfen geçerli bir URL adresi girin.");
+                return;
+            }
+
+            loaderIcon.classList.remove("hidden");
+            resultDiv.innerHTML = "";
+
+            try {
+                const response = await fetch("/api/metadata", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ url })
+                });
+
+                if (!response.ok) throw new Error("Metadata extraction failed.");
+
+                const data = await response.json();
+
+                // 1. Render card result under Scraper Box
+                resultDiv.innerHTML = `
+                    <div class="sketch-card p-5 max-w-xl mx-auto flex flex-col md:flex-row gap-4 text-slate-900">
+                        ${data.thumbnail_url ? `<img onclick="openPreviewModal('dynamic')" src="${data.thumbnail_url}" alt="Önizleme" class="w-full md:w-32 h-24 object-cover rounded-xl border-2 border-slate-900 cursor-pointer hover:opacity-90">` : ''}
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-600 border border-indigo-500/20 text-[9px] font-bold uppercase tracking-wider">${data.platform || 'WEB'}</span>
+                                <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-[9px] font-bold uppercase tracking-wider">${data.category || 'Genel'}</span>
+                            </div>
+                            <h4 class="text-slate-900 text-sm font-bold mb-1 line-clamp-1">${data.title || 'Başlıksız Bağlantı'}</h4>
+                            <p class="text-slate-600 text-xs font-light line-clamp-2 mb-3">${data.description || 'Açıklama bulunamadı.'}</p>
+                            <div class="flex flex-wrap gap-1">
+                                ${(data.tags || []).map(t => `<span class="text-[9px] text-slate-500">#${t}</span>`).join(' ')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                resultDiv.classList.remove("hidden");
+
+                // 2. Inject this newly scraped node directly into the interactive Neural Graph Canvas dynamically!
+                const space = document.getElementById("interactive-space");
+                
+                let dynNode = document.getElementById("node-dynamic");
+                if (dynNode) dynNode.remove();
+
+                dynNode = document.createElement("div");
+                dynNode.id = "node-dynamic";
+                dynNode.className = "bubble-node absolute w-14 h-14 rounded-full bg-slate-900 border-2 border-emerald-500 flex items-center justify-center text-emerald-400 shadow-lg shadow-emerald-500/10 z-10 cursor-pointer hover:border-emerald-300";
+                dynNode.style.left = "35%";
+                dynNode.style.top = "45%";
+
+                let iconSvg = `<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-.778.099-1.533.284-2.253m0 0A17.919 17.919 0 0112 10.5z"></path></svg>`;
+                if (data.platform === "youtube") {
+                    iconSvg = `<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>`;
+                }
+                dynNode.innerHTML = iconSvg;
+
+                dynNode.addEventListener("mousedown", dragStart);
+                dynNode.addEventListener("touchstart", dragStart, { passive: false });
+
+                dynNode.setAttribute("onmouseover", `showDetails('dynamic')`);
+                dynNode.setAttribute("onmouseout", `hideDetails()`);
+                dynNode.setAttribute("onclick", `openPreviewModal('dynamic')`);
+
+                space.appendChild(dynNode);
+
+                // Add to dynamic SVG connections
+                const svg = document.getElementById("connection-svg");
+                let line = document.getElementById("l-dynamic");
+                if (line) line.remove();
+
+                line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                line.id = "l-dynamic";
+                line.setAttribute("stroke", "#10b981");
+                line.setAttribute("stroke-width", "2");
+                line.setAttribute("stroke-dasharray", "3 3");
+                line.className = "opacity-80 transition-all duration-300";
+                svg.appendChild(line);
+
+                // Update stores
+                nodeTips['dynamic'] = `<strong>Analiz Edilen: ${data.title || 'Bağlantı'}</strong><br><span class='text-xs text-emerald-400'>Kategori: ${data.category || 'Genel'} - Analiz edilip Nöral Ağa katıldı. <em>(Önizlemek için tıkla!)</em></span>`;
+                
+                previewData['dynamic'] = {
+                    platform: data.platform ? data.platform.toUpperCase() : "WEB",
+                    platformBg: "bg-emerald-600",
+                    category: data.category || "Genel Kültür",
+                    title: data.title || "Analiz Edilen Bağlantı",
+                    date: "Şimdi",
+                    summary: data.description || "Bağlantı açıklaması analiz edildi.",
+                    takeaways: [
+                        "Canlı API analizi ile meta veriler başarıyla toplandı.",
+                        `Kaynak URL: ${data.url}`,
+                        `Otomatik Sınıflandırma: ${data.category || 'Genel'}`
+                    ],
+                    userNote: "Canlı demo aracıyla kütüphaneye anlık eklenen link.",
+                    tags: data.tags ? data.tags.map(t => `#${t}`) : ["#canli", "#demo"],
+                    embed: `<div class="text-white text-center p-6"><svg class="w-12 h-12 text-emerald-500 mx-auto mb-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg><p class="text-sm font-semibold">${data.title || 'Canlı Bağlantı'}</p><p class="text-xs text-slate-400 mt-1">${data.url}</p></div>`
+                };
+
+                updateLines();
+            } catch (err) {
+                resultDiv.innerHTML = `
+                    <div class="bg-red-950/20 border border-red-500/20 text-red-300 rounded-xl p-4 text-xs max-w-md mx-auto text-center">
+                        Metaveri çekilemedi. Manuel model simülasyonu yükleniyor...
+                    </div>
+                `;
+                resultDiv.classList.remove("hidden");
+            } finally {
+                loaderIcon.classList.add("hidden");
+            }
+        }
+
+        // --- 3. INTERACTIVE BUBBLE PHYSICS, ZOOM & DRAG ENGINE ---
+        let currentZoom = 1;
+        const space = document.getElementById("interactive-space");
+
+        function adjustZoom(amount) {
+            currentZoom = Math.max(0.5, Math.min(2, currentZoom + amount));
+            space.style.transform = `scale(${currentZoom})`;
+        }
+
+        function resetZoom() {
+            currentZoom = 1;
+            space.style.transform = `scale(1)`;
+        }
+
+        // Collapsible Node state
+        let isExpanded = false;
+        function toggleCollapsibleNode() {
+            isExpanded = !isExpanded;
+            const sub1 = document.getElementById("node-sub1");
+            const sub2 = document.getElementById("node-sub2");
+            const lineSub1 = document.getElementById("l-sub1");
+            const lineSub2 = document.getElementById("l-sub2");
+
+            if (isExpanded) {
+                sub1.className = "absolute w-10 h-10 rounded-full bg-slate-950 border border-amber-500/50 text-amber-300 flex items-center justify-center opacity-100 scale-100 pointer-events-auto transition-all duration-300 z-10 cursor-pointer hover:border-amber-400";
+                sub2.className = "absolute w-10 h-10 rounded-full bg-slate-950 border border-amber-500/50 text-amber-300 flex items-center justify-center opacity-100 scale-100 pointer-events-auto transition-all duration-300 z-10 cursor-pointer hover:border-amber-400";
+                lineSub1.classList.remove("opacity-0");
+                lineSub1.classList.add("opacity-50");
+                lineSub2.classList.remove("opacity-0");
+                lineSub2.classList.add("opacity-50");
+            } else {
+                sub1.className = "absolute w-10 h-10 rounded-full bg-slate-950 border border-amber-500/30 text-amber-300 flex items-center justify-center opacity-0 scale-0 pointer-events-none transition-all duration-300 z-10";
+                sub2.className = "absolute w-10 h-10 rounded-full bg-slate-950 border border-amber-500/30 text-amber-300 flex items-center justify-center opacity-0 scale-0 pointer-events-none transition-all duration-300 z-10";
+                lineSub1.classList.remove("opacity-50");
+                lineSub1.classList.add("opacity-0");
+                lineSub2.classList.remove("opacity-50");
+                lineSub2.classList.add("opacity-0");
+            }
+            updateLines();
+        }
+
+        // Drag Handler
+        const nodes = ["node-center", "node-youtube", "node-x", "node-pdf", "node-article", "node-idea", "node-sub1", "node-sub2"];
+        let activeDragNode = null;
+        let startX, startY, nodeStartX, nodeStartY;
+
+        nodes.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+
+            el.addEventListener("mousedown", dragStart);
+            el.addEventListener("touchstart", dragStart, { passive: false });
+        });
+
+        function dragStart(e) {
+            if (e.target.closest("button")) return;
+            activeDragNode = e.currentTarget;
+            
+            const event = e.type.startsWith("touch") ? e.touches[0] : e;
+            startX = event.clientX;
+            startY = event.clientY;
+
+            // Get initial percentages
+            nodeStartX = parseFloat(activeDragNode.style.left) || 50;
+            nodeStartY = parseFloat(activeDragNode.style.top) || 50;
+
+            document.addEventListener("mousemove", dragMove);
+            document.addEventListener("mouseup", dragEnd);
+            document.addEventListener("touchmove", dragMove, { passive: false });
+            document.addEventListener("touchend", dragEnd);
+        }
+
+        function dragMove(e) {
+            if (!activeDragNode) return;
+            e.preventDefault();
+
+            const event = e.type.startsWith("touch") ? e.touches[0] : e;
+            const dx = event.clientX - startX;
+            const dy = event.clientY - startY;
+
+            // Convert pixels to percentage of space container (width/height)
+            const parentWidth = space.clientWidth;
+            const parentHeight = space.clientHeight;
+
+            const percentageX = nodeStartX + (dx / parentWidth) * 100;
+            const percentageY = nodeStartY + (dy / parentHeight) * 100;
+
+            // Constrain nodes to container boundaries
+            activeDragNode.style.left = `${Math.max(5, Math.min(95, percentageX))}%`;
+            activeDragNode.style.top = `${Math.max(5, Math.min(95, percentageY))}%`;
+
+            updateLines();
+        }
+
+        function dragEnd() {
+            activeDragNode = null;
+            document.removeEventListener("mousemove", dragMove);
+            document.removeEventListener("mouseup", dragEnd);
+            document.removeEventListener("touchmove", dragMove);
+            document.removeEventListener("touchend", dragEnd);
+        }
+
+        // SVG lines update helper
+        function updateLines() {
+            const center = document.getElementById("node-center");
+            
+            const connections = [
+                { target: "node-youtube", line: "l-youtube" },
+                { target: "node-x", line: "l-x" },
+                { target: "node-pdf", line: "l-pdf" },
+                { target: "node-article", line: "l-article" },
+                { target: "node-idea", line: "l-idea" }
+            ];
+
+            const cx = (parseFloat(center.style.left) + 5) || 50;
+            const cy = (parseFloat(center.style.top) + 6) || 50;
+
+            connections.forEach(conn => {
+                const targetNode = document.getElementById(conn.target);
+                const line = document.getElementById(conn.line);
+                if (!targetNode || !line) return;
+
+                const tx = (parseFloat(targetNode.style.left) + 3) || 50;
+                const ty = (parseFloat(targetNode.style.top) + 3) || 50;
+
+                line.setAttribute("x1", `${cx}%`);
+                line.setAttribute("y1", `${cy}%`);
+                line.setAttribute("x2", `${tx}%`);
+                line.setAttribute("y2", `${ty}%`);
+            });
+
+            // Update dynamic node connection if present
+            const dynNode = document.getElementById("node-dynamic");
+            const dynLine = document.getElementById("l-dynamic");
+            if (dynNode && dynLine) {
+                const tx = (parseFloat(dynNode.style.left) + 3) || 50;
+                const ty = (parseFloat(dynNode.style.top) + 3) || 50;
+                dynLine.setAttribute("x1", `${cx}%`);
+                dynLine.setAttribute("y1", `${cy}%`);
+                dynLine.setAttribute("x2", `${tx}%`);
+                dynLine.setAttribute("y2", `${ty}%`);
+            }
+
+            // Update sub-node lines if expanded
+            if (isExpanded) {
+                const idea = document.getElementById("node-idea");
+                const sub1 = document.getElementById("node-sub1");
+                const sub2 = document.getElementById("node-sub2");
+                const lineSub1 = document.getElementById("l-sub1");
+                const lineSub2 = document.getElementById("l-sub2");
+
+                const ix = (parseFloat(idea.style.left) + 4) || 50;
+                const iy = (parseFloat(idea.style.top) + 4) || 50;
+
+                const sx1 = (parseFloat(sub1.style.left) + 2) || 50;
+                const sy1 = (parseFloat(sub1.style.top) + 2) || 50;
+
+                const sx2 = (parseFloat(sub2.style.left) + 2) || 50;
+                const sy2 = (parseFloat(sub2.style.top) + 2) || 50;
+
+                lineSub1.setAttribute("x1", `${ix}%`);
+                lineSub1.setAttribute("y1", `${iy}%`);
+                lineSub1.setAttribute("x2", `${sx1}%`);
+                lineSub1.setAttribute("y2", `${sy1}%`);
+
+                lineSub2.setAttribute("x1", `${ix}%`);
+                lineSub2.setAttribute("y1", `${iy}%`);
+                lineSub2.setAttribute("x2", `${sx2}%`);
+                lineSub2.setAttribute("y2", `${sy2}%`);
+            }
+        }
+
+        // Node descriptions details on hover
+        const nodeTips = {
+            youtube: "<strong>YouTube: AI Kodlama Trendleri</strong><br><span class='text-xs text-slate-400'>Video otomatik deşifre edildi ve özetlendi. 'TypeScript Best Practices' etiketi ile ilişkilendirildi.</span>",
+            x: "<strong>X Thread: Girişim Lansman Stratejisi</strong><br><span class='text-xs text-slate-400'>Sıralı tweetler birleştirilerek tek bir döküman haline getirildi. 'Pazarlama' kategorisine atandı.</span>",
+            pdf: "<strong>PDF: RAG Altyapı Makalesi</strong><br><span class='text-xs text-slate-400'>Akademik yayından anahtar kelimeler ve mimari şema referansları çıkarılarak kütüphanenize eklendi.</span>",
+            article: "<strong>Web: Tasarım Sistemleri Rehberi</strong><br><span class='text-xs text-slate-400'>Makalenin OpenGraph meta verileri çekildi. Okuma süresi 8 dakika olarak hesaplandı.</span>",
+            idea: "<strong>AI Sentezi: Yeni Bir SaaS Fikri</strong><br><span class='text-xs text-slate-400'>Kaydettiğiniz X thread'i ve YouTube videosundaki bilgileri çapraz sentezleyerek üretilen iş planı taslağı. <em>(Tıkla ve alt düğümleri aç/kapat!)</em></span>"
+        };
+
+        function showDetails(type) {
+            const text = document.getElementById("tooltip-text");
+            text.innerHTML = nodeTips[type];
+        }
+
+        function hideDetails() {
+            // Keep current details
+        }
+
+        // --- 4. PREVIEW MODAL LOGIC FOR DEMO ---
+        const previewData = {
+            youtube: {
+                platform: "YouTube",
+                platformBg: "bg-red-500",
+                category: "Yazılım & AI",
+                title: "10 Dakikada AI Destekli Web Uygulamaları Geliştirme",
+                date: "25 Temmuz 2026",
+                summary: "Bu video, Cursor AI ve Claude entegrasyonu yardımıyla 10 dakika gibi kısa bir sürede tam işlevsel bir web uygulamasını baştan sona nasıl tasarlayacağınızı ve devreye alacağınızı anlatıyor.",
+                takeaways: [
+                    "Sıfır satır kod yazarak prompt mühendisliğiyle veri tabanı şeması çıkarma.",
+                    "Frontend bileşenlerini Figma çıktıları üzerinden anında JSX'e çevirme.",
+                    "Express sunucu mimarisi ve API yönlendirmelerinin AI entegre yapımı."
+                ],
+                userNote: "Bu videodaki prompt mühendisliği şablonunu yeni mikro-SaaS projemde denemeliyim.",
+                tags: ["#yazılım", "#ai", "#coding", "#tutorial"],
+                embed: `<iframe class="w-full h-full rounded-xl" src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
+            },
+            tiktok: {
+                platform: "TikTok",
+                platformBg: "bg-[#010101]",
+                category: "Tasarım & Trend",
+                title: "CSS Grid ile Gelişmiş Responsive Galeri Yapımı",
+                date: "24 Temmuz 2026",
+                summary: "CSS Grid layout parametrelerini ve dynamic autofit mekanizmasını kullanarak tamamen esnek ve modern bir fotoğraf galerisinin pratik kodlama aşamalarını gösteren kısa video.",
+                takeaways: [
+                    "auto-fit ve auto-fill arasındaki farklar.",
+                    "Minimum 200px limitli grid-template-columns formülü.",
+                    "Sıfır medya sorgusu (media query) kullanarak %100 responsive tasarım elde etme."
+                ],
+                userNote: "Zihin haritalama arayüzündeki kartların esnek yerleşimi için bu grid formülü mükemmel.",
+                tags: ["#css", "#grid", "#responsive", "#uiux"],
+                embed: `<div class="text-white text-center p-6"><svg class="w-12 h-12 text-slate-500 mx-auto mb-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg><p class="text-sm font-semibold">TikTok Önizlemesi</p><p class="text-xs text-slate-400 mt-1">Gelişmiş mobil responsive ızgara kodları canlı simulasyon olarak sunuldu.</p></div>`
+            },
+            instagram: {
+                platform: "Instagram",
+                platformBg: "bg-[#e1306c]",
+                category: "Tasarım & Stil",
+                title: "Japandi Stil Ev Dekorasyon Fikirleri",
+                date: "23 Temmuz 2026",
+                summary: "Japon minimalizmi ile İskandinav fonksiyonelliğinin birleşiminden doğan Japandi stil dekorasyon trendleri, renk paletleri ve mobilya seçimi tüyoları.",
+                takeaways: [
+                    "Doğal ahşap dokuları ve toprak tonlarının kusursuz birlikteliği.",
+                    "Gereksiz tüm eşyalardan arındırılmış fonksiyonel depolama çözümleri.",
+                    "Sıcak aydınlatma ve yeşil bitkilerin oda atmosferindeki canlandırıcı etkisi."
+                ],
+                userNote: "Ahşap modülleri zihin haritamıza 'Ahşap İlham' düğümü olarak bağladım.",
+                tags: ["#dekorasyon", "#japandi", "#minimalizm", "#trend"],
+                embed: `<div class="text-white text-center p-6"><svg class="w-12 h-12 text-slate-500 mx-auto mb-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg><p class="text-sm font-semibold">Instagram Fotoğraf Detayı</p><p class="text-xs text-slate-400 mt-1">Japandi paletleri kütüphanenize renk kodlarıyla birlikte kaydedildi.</p></div>`
+            },
+            pinterest: {
+                platform: "Pinterest",
+                platformBg: "bg-[#bd081c]",
+                category: "İlham & Çalışma Alanı",
+                title: "Aesthetic Desk Setup Inspiration Board",
+                date: "22 Temmuz 2026",
+                summary: "Yazılımcılar ve kreatif içerik üreticileri için ilham verici, masa lambalarından mekanik klavyelere kadar özenle seçilmiş çalışma alanı donanım düzenleri.",
+                takeaways: [
+                    "Çift monitör kollarının sağladığı kablosuz temiz çalışma alanı konsepti.",
+                    "Göz yormayan arkadan aydınlatmalı LED barların ergonomik avantajları.",
+                    "Masaüstü düzenleyici standların ahşap uyumu."
+                ],
+                userNote: "Monitör arkası LED şerit aydınlatması ve minimal masa matı düzeni harika.",
+                tags: ["#workspace", "#desksetup", "#aesthetic", "#hardware"],
+                embed: `<div class="text-white text-center p-6"><svg class="w-12 h-12 text-slate-500 mx-auto mb-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg><p class="text-sm font-semibold">Pinterest Görsel Panosu</p><p class="text-xs text-slate-400 mt-1">Görsel ilham verileri akıllıca ayrıştırılarak taglerle ilişkilendirildi.</p></div>`
+            },
+            threads: {
+                platform: "Threads",
+                platformBg: "bg-[#4f46e5]",
+                category: "İş & Girişim",
+                title: "SaaS Lansmanında İlk 1000 Müşteriyi Kazanma Rehberi",
+                date: "21 Temmuz 2026",
+                summary: "Mikro bütçeli bağımsız girişimcilerin (indie hackers) beta süreçlerinden itibaren ilk 1000 ödeyen kullanıcıya ulaşma konusundaki gerçek pazarlama deneyimleri.",
+                takeaways: [
+                    "Lansman öncesi toplanan e-posta listelerinin (waitlist) önemi.",
+                    "Reddit, ProductHunt ve Twitter üzerinde organik kanca içerikleri oluşturma.",
+                    "Doğrudan erken benimseyen kullanıcılarla (early adopters) birebir iletişim kurma."
+                ],
+                userNote: "Reddit ve dikey topluluk kanallarını tarama formülü çok mantıklı.",
+                tags: ["#business", "#saas", "#launch", "#marketing"],
+                embed: `<div class="text-white text-center p-6"><svg class="w-12 h-12 text-slate-500 mx-auto mb-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg><p class="text-sm font-semibold">Threads Post Akışı</p><p class="text-xs text-slate-400 mt-1">Metinsel dizilimler temizlenerek anahtar pazarlama aksiyonlarına dönüştürüldü.</p></div>`
+            },
+            pdf: {
+                platform: "PDF",
+                platformBg: "bg-[#10b981]",
+                category: "Akademik & AI",
+                title: "RAG (Retrieval-Augmented Generation) Altyapı Makalesi",
+                date: "20 Temmuz 2026",
+                summary: "Büyük dil modellerinin harici kütüphane ve dökümanlardan güvenilir veri çekmesini sağlayan Retrieval-Augmented Generation (RAG) mimarisinin akademik analizi.",
+                takeaways: [
+                    "Vector embeddings tabanlı anlamsal arama indexlemesi.",
+                    "Metinlerin chunk boyutlarına ayrılarak chunk overlap ile optimize edilmesi.",
+                    "Sorgularda LLM halüsinasyonlarını sıfıra indiren RAG context yerleşimi."
+                ],
+                userNote: "Hybrid search (vektör + FTS) detaylarını zihin haritama ekledim.",
+                tags: ["#rag", "#ai", "#llm", "#academic", "#pdf"],
+                embed: `<div class="w-full h-full p-4 overflow-y-auto text-slate-300 text-xs font-mono leading-relaxed"><span class="text-emerald-400">PDF Reader Extract v1.2</span><br>--- ARTICLE TEXT CHUNK ---<br>[Introduction]<br>Retrieval-Augmented Generation (RAG) has emerged as a promising framework to address LLM hallucinations by retrieving factual chunks from private databases prior to generating responses.<br><br>[Methodology]<br>1. Sentence-level tokenization.<br>2. Vector indexing via HNSW indices.<br>3. Prompt injection and constraint checking...</div>`
+            }
+        };
+
+        function openPreviewModal(type) {
+            const data = previewData[type];
+            if (!data) return;
+
+            document.getElementById("modal-platform").innerText = data.platform;
+            document.getElementById("modal-platform").className = `px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider text-white ${data.platformBg}`;
+            document.getElementById("modal-category").innerText = data.category;
+            document.getElementById("modal-title").innerText = data.title;
+            document.getElementById("modal-date").innerText = `📅 ${data.date}`;
+            document.getElementById("modal-summary").innerText = data.summary;
+            document.getElementById("modal-user-note").innerText = data.userNote;
+
+            // Render takeaways
+            const takeawaysUl = document.getElementById("modal-takeaways");
+            takeawaysUl.innerHTML = data.takeaways.map(pt => `<li>${pt}</li>`).join("");
+
+            // Render tags
+            const tagsDiv = document.getElementById("modal-tags");
+            tagsDiv.innerHTML = data.tags.map(t => `<span class="text-[10px] text-slate-500 font-semibold">${t}</span>`).join(" ");
+
+            // Inject embed
+            document.getElementById("embed-target").innerHTML = data.embed;
+
+            // Show Modal with elegant transition
+            const modal = document.getElementById("preview-modal-overlay");
+            modal.classList.remove("hidden");
+            setTimeout(() => {
+                modal.classList.remove("opacity-0");
+                modal.classList.add("opacity-100");
+            }, 10);
+        }
+
+        function closePreviewModal() {
+            const modal = document.getElementById("preview-modal-overlay");
+            modal.classList.remove("opacity-100");
+            modal.classList.add("opacity-0");
+            setTimeout(() => {
+                modal.classList.add("hidden");
+                document.getElementById("embed-target").innerHTML = ""; // stop video play
+            }, 300);
+        }
+
+        // Initialize SVG lines layout on mount
+        window.addEventListener("DOMContentLoaded", () => {
+            updateLines();
+        });
+    </script>
+
+</body>
+</html>
