@@ -338,10 +338,23 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
               )}
             </div>
 
+            {/* AI Summary */}
+            {card.aiSummary && (
+              <div className="p-3.5 bg-indigo-50 border border-indigo-100 rounded-2xl space-y-2 shadow-sm">
+                <div className="flex items-center space-x-1 text-[10px] font-bold uppercase tracking-wider text-indigo-600">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>AI Yönetici Özeti</span>
+                </div>
+                <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                  {card.aiSummary}
+                </p>
+              </div>
+            )}
+
             {/* Description */}
             {card.description && (
               <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-1">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">İçerik Özeti / Açıklama</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Orijinal Açıklama</p>
                 <p className="text-xs text-slate-600 leading-relaxed max-h-36 overflow-y-auto pr-1">
                   {decodeHTMLEntities(card.description)}
                 </p>

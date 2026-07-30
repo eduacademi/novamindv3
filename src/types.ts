@@ -23,6 +23,7 @@ export interface Card {
  category: string | null;
  note: string;
  tags: string[];
+ aiSummary?: string;
  metadata_source: "auto" | "manual";
  created_at: number;
  is_favorite?: boolean;

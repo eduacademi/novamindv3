@@ -5,17 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NovaMind — Akıllı İkinci Beyin</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #0b0f19;
+            font-family: 'Inter', sans-serif;
+            background-color: #030712;
+            color: #e5e7eb;
         }
-        .font-serif-display {
-            font-family: 'Playfair Display', serif;
+        h1, h2, h3, h4, .font-display {
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
         .glow-indigo {
-            box-shadow: 0 0 50px -12px rgba(99, 102, 241, 0.2);
+            box-shadow: 0 0 80px -20px rgba(99, 102, 241, 0.4);
         }
         .bubble-node {
             cursor: grab;
@@ -70,25 +71,29 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <header class="relative max-w-5xl mx-auto px-6 pt-16 pb-12 text-center z-10">
-        <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold mb-6">
-            <span>Kişiye Özel Akıllı İkinci Beyin</span>
-        </span>
-        <h1 class="text-4xl md:text-6xl font-serif-display font-bold tracking-tight text-white mb-6 leading-tight">
-            Akıllı ve Görsel İkinci Beyniniz<br>
-            <span class="bg-gradient-to-r from-indigo-400 via-amber-300 to-amber-500 bg-clip-text text-transparent">NovaMind ile Fikirlerinizi Canlandırın.</span>
+    <!-- Modern SaaS Hero Section -->
+    <header class="relative max-w-6xl mx-auto px-6 pt-24 pb-20 text-center z-10">
+        <div class="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-sm font-semibold mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+            <span>AI Second Brain Platform</span>
+        </div>
+
+        <h1 class="text-5xl md:text-7xl font-display font-extrabold tracking-tight text-white mb-8 leading-[1.1] animate-in fade-in slide-in-from-bottom-6 duration-700">
+            Kaydet. Sentezle. <br class="hidden md:block">
+            <span class="bg-gradient-to-r from-indigo-400 via-purple-400 to-amber-400 bg-clip-text text-transparent">Fikir Üret.</span>
         </h1>
-        <p class="text-lg text-slate-400 max-w-2xl mx-auto mb-10 font-light leading-relaxed">
-            Kaydettiğiniz her video, makale veya içerik anında yapay zeka ile otomatik zihin haritasına dönüşür.
+
+        <p class="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto mb-12 font-medium leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
+            NovaMind sıradan bir yer imi yöneticisi değildir. Yapay zeka destekli altyapısıyla içeriklerinizi okur, otomatik özetler, zihin haritaları oluşturur ve aralarındaki bağlantıları kurarak yeni fikirler sentezler.
         </p>
-        <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
-            <a href="/app" class="w-full sm:w-auto px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-600/30 transition-all hover:scale-[1.02] flex items-center justify-center space-x-2">
-                <span>Panoya Git</span>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"></path></svg>
+
+        <div class="flex flex-col sm:flex-row justify-center items-center gap-5 animate-in fade-in slide-in-from-bottom-10 duration-700 delay-200">
+            <a href="/app" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-lg rounded-2xl shadow-[0_0_40px_-10px_rgba(99,102,241,0.5)] transition-all hover:scale-105 flex items-center justify-center space-x-2">
+                <span>Hemen Ücretsiz Başla</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"></path></svg>
             </a>
-            <a href="#features" class="w-full sm:w-auto px-8 py-4 bg-slate-800/60 hover:bg-slate-800 text-slate-300 font-semibold rounded-2xl border border-slate-700 transition-all flex items-center justify-center">
-                <span>Nasıl Çalışır?</span>
+            <a href="#features" class="w-full sm:w-auto px-8 py-4 bg-slate-900/80 hover:bg-slate-800 text-slate-300 font-semibold text-lg rounded-2xl border border-slate-700 hover:border-slate-500 transition-all flex items-center justify-center">
+                <span>Özellikleri Keşfet</span>
             </a>
         </div>
     </header>
@@ -474,11 +479,11 @@
         </div>
     </div>
 
-    <!-- Features Section (Simplified Problem & Solution for 40+ Demographics) -->
-    <section id="features" class="max-w-6xl mx-auto px-6 py-20 border-t border-slate-900">
-        <div class="text-center mb-16">
-            <h2 class="text-3xl font-serif-display font-semibold text-white mb-3">Bilgi Karmaşasına Son Verin</h2>
-            <p class="text-sm text-slate-400 max-w-xl mx-auto font-light">Günlük koşturmacada kaydettiğiniz ama bir daha asla bakmadığınız içerikleri sizin için işleyen akıllı bir yardımcı.</p>
+    <!-- Modern SaaS Feature Grid -->
+    <section id="features" class="max-w-7xl mx-auto px-6 py-24 border-t border-slate-800/50">
+        <div class="text-center mb-20">
+            <h2 class="text-4xl md:text-5xl font-display font-extrabold text-white mb-6">Bilgiyi Güce Dönüştürün</h2>
+            <p class="text-lg text-slate-400 max-w-2xl mx-auto font-medium">Klasörler ve listeler geçmişte kaldı. NovaMind'ın yapay zekası ile içeriklerinizi dinamik bir ağ (Knowledge Graph) olarak görselleştirin.</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -559,34 +564,64 @@
                 </div>
             </div>
 
-            <!-- Feature 3: Disconnected Thoughts vs MindMap Synthesis -->
-            <div class="bg-slate-900/40 p-8 rounded-2xl border border-slate-800 hover:border-slate-700/80 transition-all duration-300 flex flex-col justify-between">
+            <!-- Feature 3: Idea Synthesizer -->
+            <div class="bg-gradient-to-br from-indigo-900/20 to-purple-900/20 p-8 rounded-3xl border border-indigo-500/20 hover:border-indigo-500/40 transition-all duration-300 flex flex-col justify-between shadow-xl">
                 <div>
                     <!-- Visual Graphic 3: Synthesis of Thoughts -->
-                    <div class="w-full h-32 bg-slate-950/60 rounded-xl border border-slate-800/60 mb-6 flex items-center justify-center relative overflow-hidden">
+                    <div class="w-full h-40 bg-slate-950/80 rounded-2xl border border-indigo-500/30 mb-8 flex items-center justify-center relative overflow-hidden">
                         <svg class="w-full h-full" viewBox="0 0 200 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <!-- Floating unconnected thoughts -->
-                            <rect x="20" y="20" width="35" height="12" rx="3" fill="#334155" />
-                            <text x="37.5" y="28" fill="#94a3b8" font-size="6" text-anchor="middle">Fikir A</text>
+                            <rect x="20" y="20" width="40" height="14" rx="4" fill="#1e293b" stroke="#334155" />
+                            <text x="40" y="29" fill="#94a3b8" font-size="6" text-anchor="middle" font-family="sans-serif">Makale Notu</text>
 
-                            <rect x="15" y="55" width="35" height="12" rx="3" fill="#334155" />
-                            <text x="32.5" y="63" fill="#94a3b8" font-size="6" text-anchor="middle">Fikir B</text>
+                            <rect x="15" y="55" width="40" height="14" rx="4" fill="#1e293b" stroke="#334155" />
+                            <text x="35" y="64" fill="#94a3b8" font-size="6" text-anchor="middle" font-family="sans-serif">Video Özeti</text>
 
                             <!-- Middle divider -->
-                            <line x1="100" y1="15" x2="100" y2="85" stroke="#1e293b" stroke-dasharray="2 2" />
+                            <path d="M 90 27 Q 110 45 130 45" stroke="#6366f1" stroke-width="1.5" stroke-dasharray="2 2" fill="none" class="animate-pulse" />
+                            <path d="M 85 62 Q 110 45 130 45" stroke="#a855f7" stroke-width="1.5" stroke-dasharray="2 2" fill="none" class="animate-pulse" />
 
                             <!-- Synthesized Output -->
-                            <circle cx="150" cy="45" r="14" fill="#10b981" class="opacity-20 animate-pulse" />
-                            <path d="M150 36 L153 43 L161 43 L155 47 L157 54 L150 50 L143 54 L145 47 L139 43 L147 43 Z" fill="#34d399" />
-                            <text x="150" y="80" fill="#34d399" font-size="8" text-anchor="middle" font-weight="bold">Yeni Sentez Fikir!</text>
+                            <circle cx="150" cy="45" r="18" fill="#8b5cf6" class="opacity-20 animate-pulse" />
+                            <circle cx="150" cy="45" r="12" fill="#8b5cf6" class="opacity-40" />
+                            <path d="M150 38 L152 43 L157 43 L153 46 L154.5 51 L150 48 L145.5 51 L147 46 L143 43 L148 43 Z" fill="#fff" />
+                            <text x="150" y="75" fill="#c4b5fd" font-size="7" text-anchor="middle" font-weight="bold" font-family="sans-serif">Yaratıcı Fikir Sentezi</text>
                         </svg>
                     </div>
 
-                    <h3 class="text-white text-lg font-semibold mb-2">3. Bağlantı Kuramama Sorunu</h3>
-                    <p class="text-slate-400 text-xs font-light leading-relaxed mb-4">
-                        <strong class="text-red-400/90 font-medium">Sorun:</strong> Farklı zamanlarda kaydettiğiniz değerli bilgilerin aralarındaki ortak noktaları ve saklı fırsatları göremiyorsunuz.<br class="mb-2">
-                        <strong class="text-emerald-400 font-medium">Çözüm:</strong> Zihin Haritası (Knowledge Graph) ile tüm verileriniz görsel bağlarla birbirine kenetlenir. Çapraz eşleşmeyle size özel yepyeni fikirler sentezlenir.
+                    <h3 class="text-white text-xl font-display font-bold mb-3">AI Fikir Sentezleyici</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed font-medium">
+                        "Bu İkisini Birleştir" modu ile ilgisiz gibi görünen iki makaleyi seçin ve yapay zekanın size yepyeni, uygulanabilir bir proje fikri veya içerik planı çıkarmasını izleyin.
                     </p>
+                </div>
+            </div>
+
+            <!-- Feature 4: Chat with Bookmarks -->
+            <div class="bg-slate-900/50 p-8 rounded-3xl border border-slate-800 hover:border-slate-700 transition-all duration-300 md:col-span-3 flex flex-col md:flex-row items-center gap-8 shadow-lg">
+                <div class="flex-1">
+                    <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold mb-4 uppercase tracking-wider">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span>YENİ ÖZELLİK</span>
+                    </div>
+                    <h3 class="text-white text-2xl md:text-3xl font-display font-bold mb-4">Kütüphanenizle Sohbet Edin</h3>
+                    <p class="text-slate-400 text-base leading-relaxed font-medium mb-6">
+                        Binlerce link arasında kaybolmaya son. NovaMind Asistan'a "Geçen ay kaydettiğim SEO taktikleri nelerdi?" diye sorun ve doğrudan kendi verilerinizden oluşan referanslı bir RAG cevabı alın.
+                    </p>
+                    <a href="/app" class="inline-flex items-center space-x-2 text-indigo-400 hover:text-indigo-300 font-bold">
+                        <span>Hemen Dene</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    </a>
+                </div>
+                <div class="w-full md:w-1/2 h-64 bg-slate-950 rounded-2xl border border-slate-800 flex items-center justify-center p-4 relative overflow-hidden">
+                     <div class="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent z-10 pointer-events-none"></div>
+                     <div class="w-full max-w-sm space-y-4 z-0">
+                         <div class="bg-slate-800 rounded-2xl rounded-tl-none p-4 w-4/5 text-xs text-slate-300 border border-slate-700">
+                             Merhaba! Geçen hafta tasarım sistemleri ile ilgili 3 önemli rehber kaydettin. En çok üstünde durduğun konu 'Design Tokens' olmuş.
+                         </div>
+                         <div class="bg-indigo-600 rounded-2xl rounded-tr-none p-4 w-3/4 ml-auto text-xs text-white shadow-md">
+                             Bu rehberleri özetler misin?
+                         </div>
+                     </div>
                 </div>
             </div>
 

@@ -3,7 +3,8 @@ import {
   categorizeSingleItemWithGemini, 
   batchCategorizeWithGemini, 
   generateMindmapWithGemini, 
-  generateIdeasWithGemini 
+  generateIdeasWithGemini,
+  chatWithBookmarks
 } from "../services/geminiService.js";
 import { aiLimiter } from "../middleware/rateLimit.js";
 
@@ -72,6 +73,31 @@ router.post("/gemini/ideas", aiLimiter, async (req, res, next) => {
 
     const ideas = await generateIdeasWithGemini(req, { mode, cards, selectedCardIds, customPrompt });
     return res.json({ ideas });
+
+  } catch (err) {
+    next(err);
+  }
+});
+
+// AI Chat with Bookmarks (RAG)
+router.post("/gemini/chat", aiLimiter, async (req, res, next) => {
+  try {
+    const { query, cards } = req.body;
+
+    if (!process.env.GEMINI_API_KEY && !req.headers["x-gemini-api-key"]) {
+      return res.status(500).json({ error: "GEMINI_API_KEY bulunamadı." });
+    }
+
+    if (!query || typeof query !== "string") {
+      return res.status(400).json({ error: "Soru (query) alanı gereklidir." });
+    }
+
+    if (!cards || !Array.isArray(cards) || cards.length === 0) {
+      return res.status(400).json({ error: "Sohbet edebilmek için kütüphanenizde en az 1 kart bulunmalıdır." });
+    }
+
+    const answer = await chatWithBookmarks(req, { query, cards });
+    return res.json({ answer });
 
   } catch (err) {
     next(err);

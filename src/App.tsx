@@ -9,6 +9,8 @@ import { MindMapViewer } from "./components/MindMapViewer";
 import { IdeaGenerator } from "./components/IdeaGenerator";
 import { AddCardModal } from "./components/AddCardModal";
 import { PreviewModal } from "./components/PreviewModal";
+import { ChatWidget } from "./components/ChatWidget";
+import { MessageSquare } from "lucide-react";
 import { PwaShareNotice } from "./components/PwaShareNotice";
 import { SettingsModal } from "./components/SettingsModal";
 import { PricingModal } from "./components/Subscription/PricingModal";
@@ -45,6 +47,7 @@ export default function App() {
   const [initialShareUrl, setInitialShareUrl] = useState("");
   const [initialShareTitle, setInitialShareTitle] = useState("");
   const [notification, setNotification] = useState<string | null>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   // Firebase Init Auth Listener
   useEffect(() => {
@@ -399,6 +402,22 @@ export default function App() {
       <footer className="border-t border-slate-200 py-4 text-center text-xs text-slate-400">
         <p>NovaMind • Kişisel Link & Medya Kasası • PWA • Tüm Verileriniz Kişisel Hesabınızda Saklanır</p>
       </footer>
+
+      {/* Floating Action Button for AI Chat */}
+      <button
+        onClick={() => setIsChatOpen(!isChatOpen)}
+        className="fixed bottom-6 right-6 z-40 p-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center border border-indigo-400"
+        title="Yapay Zeka ile Kütüphanende Sohbet Et"
+      >
+        <MessageSquare className="w-6 h-6" />
+      </button>
+
+      {/* AI Chat Widget */}
+      <ChatWidget
+        cards={cards}
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+      />
 
     </div>
   );

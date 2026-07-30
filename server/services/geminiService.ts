@@ -32,6 +32,7 @@ export async function batchCategorizeWithGemini(req: Request, rawItems: any[]) {
     const prompt = `Sana aşağıda ${payload.length} adet farklı web bağlantısı/bookmark verisi veriyorum.
 Lütfen HER BİR LİNKİ DİĞERLERİNDEN TAMAMEN BAĞIMSIZ OLARAK TEKER TEKER ANALİZ ET.
 Her bir linkin konusuna en uygun spesifik Türkçe "category" (örneğin: Yazılım & AI, Tasarım & İllüstrasyon, Yemek & Tarif, Finans & Ekonomi, Müzik & Sanat, Spor & Sağlık, Haber & Siyaset, Üretkenlik, Oyun, Sinema & Dizi, Eğitim) ve 3-5 adet özgün Türkçe "tags" belirle.
+Ayrıca, her bir içeriğin konusunu özetleyen 2-3 cümlelik çok kısa ve net bir yönetici özeti ("aiSummary") çıkar.
 ÇOK ÖNEMLİ: Her link kendi içeriğine özel kategorisini almalıdır; tüm linklere aynı kategoriyi verme!
 
 Bağlantı Öğeleri:
@@ -40,7 +41,7 @@ ${JSON.stringify(payload, null, 2)}
 Çıktıyı 'categorized_items' dizisi olarak JSON yapısında döndür.`;
 
     const response = await aiClient.models.generateContent({
-      model: "gemini-3.6-flash",
+      model: "gemini-1.5-flash",
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -54,12 +55,13 @@ ${JSON.stringify(payload, null, 2)}
                 properties: {
                   id: { type: Type.INTEGER },
                   category: { type: Type.STRING },
+                  aiSummary: { type: Type.STRING },
                   tags: {
                     type: Type.ARRAY,
                     items: { type: Type.STRING }
                   }
                 },
-                required: ["id", "category", "tags"]
+                required: ["id", "category", "tags", "aiSummary"]
               }
             }
           },
@@ -76,6 +78,7 @@ ${JSON.stringify(payload, null, 2)}
         const target = items[catItem.id];
         if (target) {
           if (catItem.category) target.category = catItem.category;
+          if (catItem.aiSummary) target.aiSummary = catItem.aiSummary;
           if (Array.isArray(catItem.tags) && catItem.tags.length > 0) {
             target.tags = catItem.tags;
           }
@@ -93,7 +96,7 @@ ${JSON.stringify(payload, null, 2)}
 export async function categorizeSingleItemWithGemini(req: Request, itemData: any) {
   const { title, description, note, url, platform } = itemData;
   const prompt = `Lütfen aşağıdaki bookmark ve kişisel not verisini analiz et.
-Türkçe dilde uygun tek bir ana Kategori ve 3-5 adet alakalı Türkçe etiket (tag) öner.
+Türkçe dilde uygun tek bir ana Kategori, 3-5 adet alakalı Türkçe etiket (tag) öner ve içeriği anlatan 2-3 cümlelik çok net bir yönetici özeti (aiSummary) çıkar.
 
 İçerik Detayları:
 - Platform: ${platform || "Bilinmiyor"}
@@ -105,11 +108,12 @@ Türkçe dilde uygun tek bir ana Kategori ve 3-5 adet alakalı Türkçe etiket (
 Yanıtını kesinlikle aşağıdaki JSON yapısında döndür:
 {
   "category": "Kategori Adı (ör: Yazılım & AI, Tasarım & Stil, Üretkenlik, Finans, Sağlık & Yaşam, Yemek & Tarif)",
+  "aiSummary": "Bu linkin içeriğine ve alınan nota dair 2-3 cümlelik yönetici özeti...",
   "tags": ["etiket1", "etiket2", "etiket3"]
 }`;
 
   const response = await getAiClient(req).models.generateContent({
-    model: "gemini-3.6-flash",
+    model: "gemini-1.5-flash",
     contents: prompt,
     config: {
       responseMimeType: "application/json",
@@ -117,12 +121,13 @@ Yanıtını kesinlikle aşağıdaki JSON yapısında döndür:
         type: Type.OBJECT,
         properties: {
           category: { type: Type.STRING },
+          aiSummary: { type: Type.STRING },
           tags: {
             type: Type.ARRAY,
             items: { type: Type.STRING }
           }
         },
-        required: ["category", "tags"]
+        required: ["category", "tags", "aiSummary"]
       }
     }
   });
@@ -161,7 +166,7 @@ Kurallar:
 Düğüm yapısı: { "id": "string", "label": "string", "summary": "string", "color": "string", "cardIds": ["string"], "children": [ DüğümYapısı ] }`;
 
   const response = await getAiClient(req).models.generateContent({
-    model: "gemini-3.6-flash",
+    model: "gemini-1.5-flash",
     contents: prompt,
     config: {
       responseMimeType: "application/json"
@@ -170,6 +175,35 @@ Düğüm yapısı: { "id": "string", "label": "string", "summary": "string", "co
 
   const jsonText = response.text || "{}";
   return JSON.parse(jsonText);
+}
+
+export async function chatWithBookmarks(req: Request, options: { query: string; cards: any[] }) {
+  const { query, cards } = options;
+
+  const cardsData = cards.map((c: any) => ({
+    title: c.title || "İsimsiz",
+    note: c.note || "",
+    description: c.description || "",
+    category: c.category || "",
+    url: c.url || ""
+  }));
+
+  const prompt = `Sen NovaMind uygulamasının yapay zeka asistanısın. Kullanıcı sana kendi kişisel kütüphanesindeki (kaydettiği bağlantılar, notlar ve yer imleri) verilerle ilgili bir soru soruyor.
+Görevin, aşağıdaki kullanıcının verilerini inceleyerek onun sorusuna doğrudan, net ve arkadaşça bir dilde (Türkçe) yanıt vermek. Gerekirse ilgili içeriklerin bağlantılarını (URL) veya başlıklarını referans göster.
+
+Kullanıcının Sorusu: "${query}"
+
+Kullanıcının Verileri:
+${JSON.stringify(cardsData, null, 2)}
+
+Eğer kullanıcının sorusu mevcut verilerle tam olarak cevaplanamıyorsa, "Kütüphanenizde bu konuya dair doğrudan bir kayıt bulamadım ancak..." diyerek genel bilginle yardımcı olmaya çalış.`;
+
+  const response = await getAiClient(req).models.generateContent({
+    model: "gemini-1.5-flash",
+    contents: prompt
+  });
+
+  return response.text || "Üzgünüm, şu an cevap veremiyorum.";
 }
 
 export async function generateIdeasWithGemini(req: Request, options: { mode: string; cards: any[]; selectedCardIds?: string[]; customPrompt?: string }) {
@@ -223,7 +257,7 @@ Yanıtını aşağıdaki JSON şemasında dizi olarak ver:
 ]`;
 
   const response = await getAiClient(req).models.generateContent({
-    model: "gemini-3.6-flash",
+    model: "gemini-1.5-flash",
     contents: prompt,
     config: {
       responseMimeType: "application/json"

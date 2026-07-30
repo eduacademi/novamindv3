@@ -274,8 +274,15 @@ export const CardItem: React.FC<CardItemProps> = ({
           )}
         </div>
 
-        {/* Description if present and no thumbnail */}
-        {card.description && !card.thumbnail_url && card.platform !== "threads" && (
+        {/* AI Summary or Description */}
+        {card.aiSummary ? (
+          <div className="flex items-start space-x-1.5 p-2 bg-indigo-50/50 rounded-lg border border-indigo-100">
+            <Sparkles className="w-3 h-3 text-indigo-500 shrink-0 mt-0.5" />
+            <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+              {card.aiSummary}
+            </p>
+          </div>
+        ) : (card.description && !card.thumbnail_url && card.platform !== "threads") && (
           <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
             {decodeHTMLEntities(card.description)}
           </p>
