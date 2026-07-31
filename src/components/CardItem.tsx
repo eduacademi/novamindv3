@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ExternalLink, ShoppingBag, Star, Trash2, Edit3, Check, Tag, Youtube, Instagram, Twitter, MessageSquare, Pin, Video, FileText, Globe, AtSign, Play, Eye, Share2, Feather } from "lucide-react";
+import { ExternalLink, ShoppingBag, Star, Trash2, Edit3, Check, Tag, Youtube, Instagram, Twitter, MessageSquare, Pin, Video, FileText, Globe, AtSign, Play, Eye, Share2, Feather, Sparkles } from "lucide-react";
 import { Card, Platform } from "../types";
 import { PLATFORMS } from "../lib/platformHelper";
 import { decodeHTMLEntities } from "../lib/textHelper";
