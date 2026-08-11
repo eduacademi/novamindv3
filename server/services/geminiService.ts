@@ -91,6 +91,10 @@ ${JSON.stringify(payload, null, 2)}
 }
 
 export async function categorizeSingleItemWithGemini(req: Request, itemData: any) {
+  const aiClient = getAiClient(req);
+  if (!aiClient) {
+    throw new Error("Gemini API key is not configured.");
+  }
   const { title, description, note, url, platform } = itemData;
   const prompt = `Lütfen aşağıdaki bookmark ve kişisel not verisini analiz et.
 Türkçe dilde uygun tek bir ana Kategori ve 3-5 adet alakalı Türkçe etiket (tag) öner.
@@ -108,7 +112,7 @@ Yanıtını kesinlikle aşağıdaki JSON yapısında döndür:
   "tags": ["etiket1", "etiket2", "etiket3"]
 }`;
 
-  const response = await getAiClient(req).models.generateContent({
+  const response = await aiClient.models.generateContent({
     model: "gemini-3.6-flash",
     contents: prompt,
     config: {
@@ -132,6 +136,10 @@ Yanıtını kesinlikle aşağıdaki JSON yapısında döndür:
 }
 
 export async function generateMindmapWithGemini(req: Request, cards: any[]) {
+  const aiClient = getAiClient(req);
+  if (!aiClient) {
+    throw new Error("Gemini API key is not configured.");
+  }
   const cardsSummary = cards.map((c: any) => ({
     id: c.id,
     title: c.title || "İsimsiz Kart",
@@ -160,7 +168,7 @@ Kurallar:
 Çıktı JSON Şeması:
 Düğüm yapısı: { "id": "string", "label": "string", "summary": "string", "color": "string", "cardIds": ["string"], "children": [ DüğümYapısı ] }`;
 
-  const response = await getAiClient(req).models.generateContent({
+  const response = await aiClient.models.generateContent({
     model: "gemini-1.5-flash",
     contents: prompt,
     config: {
@@ -173,6 +181,10 @@ Düğüm yapısı: { "id": "string", "label": "string", "summary": "string", "co
 }
 
 export async function chatWithBookmarks(req: Request, options: { query: string; cards: any[] }) {
+  const aiClient = getAiClient(req);
+  if (!aiClient) {
+    throw new Error("Gemini API key is not configured.");
+  }
   const { query, cards } = options;
 
   const cardsData = cards.map((c: any) => ({
@@ -193,7 +205,7 @@ ${JSON.stringify(cardsData, null, 2)}
 
 Eğer kullanıcının sorusu mevcut verilerle tam olarak cevaplanamıyorsa, "Kütüphanenizde bu konuya dair doğrudan bir kayıt bulamadım ancak..." diyerek genel bilginle yardımcı olmaya çalış.`;
 
-  const response = await getAiClient(req).models.generateContent({
+  const response = await aiClient.models.generateContent({
     model: "gemini-1.5-flash",
     contents: prompt
   });
@@ -202,6 +214,10 @@ Eğer kullanıcının sorusu mevcut verilerle tam olarak cevaplanamıyorsa, "Kü
 }
 
 export async function generateIdeasWithGemini(req: Request, options: { mode: string; cards: any[]; selectedCardIds?: string[]; customPrompt?: string }) {
+  const aiClient = getAiClient(req);
+  if (!aiClient) {
+    throw new Error("Gemini API key is not configured.");
+  }
   const { mode, cards, selectedCardIds, customPrompt } = options;
 
   let modeInstruction = "";
@@ -251,7 +267,7 @@ Yanıtını aşağıdaki JSON şemasında dizi olarak ver:
   }
 ]`;
 
-  const response = await getAiClient(req).models.generateContent({
+  const response = await aiClient.models.generateContent({
     model: "gemini-1.5-flash",
     contents: prompt,
     config: {
@@ -262,3 +278,4 @@ Yanıtını aşağıdaki JSON şemasında dizi olarak ver:
   const jsonText = response.text || "[]";
   return JSON.parse(jsonText);
 }
+
