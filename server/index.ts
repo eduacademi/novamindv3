@@ -1,7 +1,6 @@
 import express from "express";
 import path from "path";
 import helmet from "helmet";
-import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
 
 import { corsMiddleware } from "./middleware/cors.js";
@@ -51,6 +50,7 @@ export default app;
 // Vite middleware & Static server setup
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
@@ -68,6 +68,7 @@ async function startServer() {
     console.log(`🚀 NovaMind Server running on http://localhost:${PORT}`);
   });
 }
+
 
 if (!process.env.VERCEL) {
   startServer();
