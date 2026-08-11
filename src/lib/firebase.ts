@@ -1,6 +1,16 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore, collection, doc, setDoc, getDocs, onSnapshot, writeBatch, deleteDoc } from "firebase/firestore";
-import { getAuth, signInAnonymously, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, User } from "firebase/auth";
+import { 
+  getAuth, 
+  signInAnonymously, 
+  signInWithPopup, 
+  GoogleAuthProvider, 
+  signOut, 
+  onAuthStateChanged, 
+  User,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword
+} from "firebase/auth";
 import firebaseConfig from "../../firebase-applet-config.json";
 import { Card, ShoppingItem, ReminderItem } from "../types";
 
@@ -54,6 +64,32 @@ export async function loginWithGoogle(): Promise<User | null> {
     return result.user;
   } catch (err) {
     console.error("Google sign in error:", err);
+    throw err;
+  }
+}
+
+/**
+ * Sign in with Email and Password
+ */
+export async function loginWithEmail(email: string, pass: string): Promise<User | null> {
+  try {
+    const result = await signInWithEmailAndPassword(auth, email, pass);
+    return result.user;
+  } catch (err) {
+    console.error("Email login error:", err);
+    throw err;
+  }
+}
+
+/**
+ * Register with Email and Password
+ */
+export async function registerWithEmail(email: string, pass: string): Promise<User | null> {
+  try {
+    const result = await createUserWithEmailAndPassword(auth, email, pass);
+    return result.user;
+  } catch (err) {
+    console.error("Email register error:", err);
     throw err;
   }
 }

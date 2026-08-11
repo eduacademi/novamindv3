@@ -12,6 +12,8 @@ export type Platform =
  | "note"
  | "other";
 
+export type UserFocus = "creator" | "researcher";
+
 export interface Card {
  id: string;
  url: string;
@@ -26,6 +28,15 @@ export interface Card {
  metadata_source: "auto" | "manual";
  created_at: number;
  is_favorite?: boolean;
+ projectIds?: string[];
+}
+
+export interface Project {
+ id: string;
+ title: string;
+ description: string;
+ focus: UserFocus;
+ created_at: number;
 }
 
 export interface ShoppingItem {

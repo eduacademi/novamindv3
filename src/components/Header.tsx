@@ -1,6 +1,7 @@
-import React, { useRef } from "react";
-import { Plus, Download, Upload, Sparkles, Network, Bookmark, Lightbulb, Share2, LogIn, LogOut, User as UserIcon } from "lucide-react";
+import React, { useState, useRef } from "react";
+import { Plus, Sparkles, Network, Bookmark, Lightbulb, Share2, LogIn, LogOut, User as UserIcon, Search, MoreHorizontal, Settings, Download, Upload, ShieldCheck, Pin } from "lucide-react";
 import { User } from "firebase/auth";
+import { toast } from "sonner";
 import { Card } from "../types";
 import { exportBackupJSON, importBackupJSON } from "../lib/storage";
 
@@ -13,8 +14,10 @@ interface HeaderProps {
   onOpenPwaInfo: () => void;
   onOpenSettings: () => void;
   onOpenPricing: () => void;
+  onOpenCommandPalette: () => void;
+  onOpenAuthModal: () => void;
+  onOpenUserDashboard: () => void;
   currentUser: User | null;
-  onLoginWithGoogle: () => void;
   onLogout: () => void;
 }
 
@@ -27,10 +30,13 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenPwaInfo,
   onOpenSettings,
   onOpenPricing,
+  onOpenCommandPalette,
+  onOpenAuthModal,
+  onOpenUserDashboard,
   currentUser,
-  onLoginWithGoogle,
   onLogout,
 }) => {
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleExport = () => {
@@ -39,9 +45,11 @@ export const Header: React.FC<HeaderProps> = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Fikir_Kutuphanesi_Yedek_${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `NovaMind_Yedek_${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    toast.success("Veri yedeğiniz başarıyla indirildi.");
+    setIsMoreMenuOpen(false);
   };
 
   const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,193 +61,219 @@ export const Header: React.FC<HeaderProps> = ({
       const content = event.target?.result as string;
       if (content) {
         const result = importBackupJSON(content);
-        alert(result.message);
         if (result.success) {
+          toast.success(result.message);
           onRefreshData();
+        } else {
+          toast.error(result.message);
         }
       }
     };
     reader.readAsText(file);
     if (fileInputRef.current) fileInputRef.current.value = "";
+    setIsMoreMenuOpen(false);
   };
 
-  const totalNotesLength = cards.reduce((acc, c) => acc + (c.note ? c.note.length : 0), 0);
-
   return (
-    <header className="sticky top-0 z-30 bg-slate-900/95 backdrop-blur-md text-slate-100 border-b border-slate-800 shadow-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-        {/* Top bar: Title & Actions */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          
-          {/* Logo & Title */}
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-indigo-900/30">
-              <Lightbulb className="w-6 h-6 animate-pulse" />
-            </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <h1 className="text-xl font-bold font-serif tracking-tight text-white flex items-center gap-1.5">
-                  <span className="bg-gradient-to-r from-indigo-400 via-amber-300 to-amber-500 bg-clip-text text-transparent">NovaMind</span>
-                </h1>
-                <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center space-x-1" title="Kişiye Özel İzole Bulut Veritabanı">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span>{currentUser && !currentUser.isAnonymous ? "Kişisel Bulut" : "Misafir Modu"}</span>
-                </span>
-              </div>
-              <p className="text-xs text-slate-400">
-                Akıllı Link & Medya Kasası • AI Knowledge Graph • Fikir Üretici
-              </p>
+    <header className="sticky top-0 z-30 bg-[#FAF6EE]/90 backdrop-blur-md border-b border-[#E2D8C3] text-[#2C221E] shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+        
+        {/* Left: Clean Warm Moleskine Branding */}
+        <div className="flex items-center space-x-3 shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-[#D85A30] flex items-center justify-center text-[#FBF7EC] shadow-sm transform -rotate-1">
+            <Pin className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="flex items-center space-x-2">
+              <span className="text-lg font-bold font-serif-fraunces tracking-tight text-[#3A2E22]">
+                NovaMind
+              </span>
+              <button
+                onClick={currentUser && !currentUser.isAnonymous ? onOpenUserDashboard : onOpenAuthModal}
+                className="px-2.5 py-0.5 text-[11px] font-semibold rounded-full bg-[#EBE2D0] text-[#6B5A47] border border-[#DCD0B9] flex items-center space-x-1.5 hover:bg-[#E2D6C0] transition-colors cursor-pointer"
+                title="Hesap & Senkronizasyon"
+              >
+                <span className="w-2 h-2 rounded-full bg-[#D85A30]"></span>
+                <span>{currentUser && !currentUser.isAnonymous ? "Bulut Aktif" : "Giriş Yap"}</span>
+              </button>
             </div>
           </div>
-
-          {/* Action Buttons & Auth */}
-          <div className="flex items-center flex-wrap gap-2">
-            
-            {/* User Auth Info / Login button */}
-            {currentUser && !currentUser.isAnonymous ? (
-              <div className="flex items-center space-x-2 bg-slate-800/80 px-2.5 py-1.5 rounded-xl border border-slate-700">
-                {currentUser.photoURL ? (
-                  <img src={currentUser.photoURL} alt="Avatar" className="w-6 h-6 rounded-full border border-indigo-400" />
-                ) : (
-                  <UserIcon className="w-4 h-4 text-indigo-400" />
-                )}
-                <span className="text-xs text-slate-200 font-medium max-w-[120px] truncate">{currentUser.displayName || currentUser.email}</span>
-                <button
-                  onClick={onLogout}
-                  title="Çıkış Yap"
-                  className="p-1 hover:bg-slate-700 text-slate-400 hover:text-red-400 rounded-lg transition-colors"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={onLoginWithGoogle}
-                className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-amber-200 text-xs font-medium rounded-xl flex items-center space-x-1.5 border border-amber-500/30 transition-all shadow-sm"
-              >
-                <LogIn className="w-4 h-4" />
-                <span>Google ile Giriş Yap</span>
-              </button>
-            )}
-
-            {/* Upgrade to Pro Button */}
-            <button
-              onClick={onOpenPricing}
-              id="header-upgrade-btn"
-              className="px-3 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold text-xs rounded-xl flex items-center space-x-1.5 shadow-md shadow-amber-500/20 transition-all hover:scale-[1.03]"
-            >
-              <Sparkles className="w-3.5 h-3.5 fill-current" />
-              <span>Pro'ya Yükselt</span>
-            </button>
-
-            {/* Add Link Primary Button */}
-            <button
-              onClick={onOpenAddModal}
-              id="header-add-link-btn"
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium text-sm rounded-xl flex items-center space-x-1.5 shadow-md shadow-indigo-600/30 transition-all hover:scale-[1.02]"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Link & Not Ekle</span>
-            </button>
-
-            {/* PWA Share info */}
-            <button
-              onClick={onOpenPwaInfo}
-              id="header-pwa-info-btn"
-              title="Mobil Paylaşım & PWA İpuçları"
-              className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm rounded-xl flex items-center space-x-1 border border-slate-700 transition-colors"
-            >
-              <Share2 className="w-4 h-4 text-emerald-400" />
-              <span className="hidden sm:inline">PWA / Paylaşım</span>
-            </button>
-
-            {/* Backup Export/Import */}
-            <div className="flex items-center space-x-1 bg-slate-800 p-1 rounded-xl border border-slate-700">
-              <button
-                onClick={onOpenSettings}
-                title="Ayarlar"
-                className="p-1.5 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white transition-colors border border-transparent hover:border-slate-600"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-              </button>
-              <button
-                onClick={handleExport}
-                id="header-export-btn"
-                title="Verileri JSON Yedekle"
-                className="p-1.5 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white transition-colors"
-              >
-                <Download className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                id="header-import-btn"
-                title="JSON Yedeği Yükle"
-                className="p-1.5 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white transition-colors"
-              >
-                <Upload className="w-4 h-4" />
-              </button>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleImportFile}
-                accept=".json"
-                className="hidden"
-              />
-            </div>
-
-          </div>
-
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between overflow-x-auto no-scrollbar">
-          <div className="flex items-center space-x-1 sm:space-x-2 min-w-max">
-            
+        {/* Center: Analog Paper Navigation Tabs */}
+        <nav className="hidden md:flex items-center bg-[#EBE2D0]/80 border border-[#DCD0B9] p-1 rounded-xl shadow-inner">
+          <button
+            onClick={() => setActiveTab("mindmap")}
+            className={`px-4 py-1.5 text-xs font-semibold rounded-lg flex items-center space-x-2 transition-all cursor-pointer ${
+              activeTab === "mindmap"
+                ? "bg-[#FBF7EC] text-[#3A2E22] shadow-sm font-bold"
+                : "text-[#786958] hover:text-[#3A2E22] hover:bg-[#F4EBE0]/60"
+            }`}
+          >
+            <Network className="w-4 h-4 text-[#D85A30]" />
+            <span>Detektif Panosu (Graph)</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("library")}
+            className={`px-4 py-1.5 text-xs font-semibold rounded-lg flex items-center space-x-2 transition-all cursor-pointer ${
+              activeTab === "library"
+                ? "bg-[#FBF7EC] text-[#3A2E22] shadow-sm font-bold"
+                : "text-[#786958] hover:text-[#3A2E22] hover:bg-[#F4EBE0]/60"
+            }`}
+          >
+            <Bookmark className="w-4 h-4 text-[#6B5A47]" />
+            <span>Fikir Kartları ({cards.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("ideas")}
+            className={`px-4 py-1.5 text-xs font-semibold rounded-lg flex items-center space-x-2 transition-all cursor-pointer ${
+              activeTab === "ideas"
+                ? "bg-[#FBF7EC] text-[#3A2E22] shadow-sm font-bold"
+                : "text-[#786958] hover:text-[#3A2E22] hover:bg-[#F4EBE0]/60"
+            }`}
+          >
+            <Sparkles className="w-4 h-4 text-[#D85A30]" />
+            <span>Fikir Üretici</span>
+          </button>
+        </nav>
+
+        {/* Right: Tactile Action Controls */}
+        <div className="flex items-center space-x-2.5">
+          
+          {/* Cmd+K Search Trigger */}
+          <button
+            onClick={onOpenCommandPalette}
+            className="px-3.5 py-1.5 bg-[#FBF7EC] hover:bg-white text-[#5A4A34] text-xs font-medium rounded-xl flex items-center space-x-2 border border-[#DCD0B9] transition-all cursor-pointer shadow-2xs"
+            title="Arama Paleti (Cmd+K)"
+          >
+            <Search className="w-4 h-4 text-[#8A7B5E]" />
+            <span className="hidden lg:inline">Ara...</span>
+            <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono bg-[#EBE2D0] border border-[#DCD0B9] text-[#786958] rounded">
+              ⌘K
+            </kbd>
+          </button>
+
+          {/* Primary CTA: Add Link Button (Terracotta Red) */}
+          <button
+            onClick={onOpenAddModal}
+            className="px-4 py-1.5 bg-[#D85A30] hover:bg-[#C84A20] active:bg-[#B83A10] text-[#FBF7EC] text-xs font-bold rounded-xl flex items-center space-x-1.5 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Kart Ekle</span>
+          </button>
+
+          {/* User Profile / Login */}
+          {currentUser && !currentUser.isAnonymous ? (
             <button
-              onClick={() => setActiveTab("mindmap")}
-              id="tab-mindmap-btn"
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center space-x-2 transition-all ${
-                activeTab === "mindmap"
-                  ? "bg-indigo-600/30 text-indigo-200 border border-indigo-500/40"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
-              }`}
+              onClick={onOpenUserDashboard}
+              className="p-1 rounded-xl bg-[#FBF7EC] border border-[#DCD0B9] hover:border-[#B8AA90] transition-all cursor-pointer"
+              title="Hesabım & Profil"
             >
-              <Network className="w-4 h-4 text-amber-400" />
-              <span>AI Knowledge Graph (Ana Ekran)</span>
+              {currentUser.photoURL ? (
+                <img src={currentUser.photoURL} alt="Avatar" className="w-7 h-7 rounded-lg object-cover" />
+              ) : (
+                <div className="w-7 h-7 rounded-lg bg-[#EBE2D0] flex items-center justify-center text-[#6B5A47]">
+                  <UserIcon className="w-4 h-4" />
+                </div>
+              )}
+            </button>
+          ) : (
+            <button
+              onClick={onOpenAuthModal}
+              className="px-3 py-1.5 bg-[#FBF7EC] hover:bg-white text-[#3A2E22] text-xs font-semibold rounded-xl border border-[#DCD0B9] transition-all cursor-pointer"
+            >
+              Giriş Yap
+            </button>
+          )}
+
+          {/* More Options Dropdown (...) */}
+          <div className="relative">
+            <button
+              onClick={() => setIsMoreMenuOpen(prev => !prev)}
+              className="p-2 bg-[#FBF7EC] hover:bg-white text-[#5A4A34] rounded-xl border border-[#DCD0B9] transition-colors cursor-pointer"
+              title="Diğer Seçenekler"
+            >
+              <MoreHorizontal className="w-4 h-4" />
             </button>
 
-            <button
-              onClick={() => setActiveTab("library")}
-              id="tab-library-btn"
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center space-x-2 transition-all ${
-                activeTab === "library"
-                  ? "bg-indigo-600/30 text-indigo-200 border border-indigo-500/40"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
-              }`}
-            >
-              <Bookmark className="w-4 h-4" />
-              <span>Kişisel Link Panosu ({cards.length})</span>
-            </button>
+            {isMoreMenuOpen && (
+              <div className="absolute right-0 mt-2 w-52 bg-[#FBF7EC] border border-[#DCD0B9] rounded-2xl shadow-xl py-1.5 text-xs text-[#3A2E22] z-50 animate-in fade-in zoom-in-95 duration-150">
+                <button
+                  onClick={() => {
+                    setIsMoreMenuOpen(false);
+                    onOpenPricing();
+                  }}
+                  className="w-full px-4 py-2.5 text-left flex items-center space-x-2 hover:bg-[#EBE2D0] cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4 text-[#D85A30]" />
+                  <span>Pro Plan Detayları</span>
+                </button>
 
-            <button
-              onClick={() => setActiveTab("ideas")}
-              id="tab-ideas-btn"
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center space-x-2 transition-all ${
-                activeTab === "ideas"
-                  ? "bg-indigo-600/30 text-indigo-200 border border-indigo-500/40"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
-              }`}
-            >
-              <Sparkles className="w-4 h-4 text-indigo-400 animate-pulse" />
-              <span>Fikir Üretici (AI)</span>
-            </button>
+                <button
+                  onClick={() => {
+                    setIsMoreMenuOpen(false);
+                    onOpenPwaInfo();
+                  }}
+                  className="w-full px-4 py-2.5 text-left flex items-center space-x-2 hover:bg-[#EBE2D0] cursor-pointer"
+                >
+                  <Share2 className="w-4 h-4 text-[#6B5A47]" />
+                  <span>PWA & Paylaşım Rehberi</span>
+                </button>
 
+                <button
+                  onClick={handleExport}
+                  className="w-full px-4 py-2.5 text-left flex items-center space-x-2 hover:bg-[#EBE2D0] cursor-pointer"
+                >
+                  <Download className="w-4 h-4 text-[#3B7A57]" />
+                  <span>JSON Yedeği İndir</span>
+                </button>
+
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full px-4 py-2.5 text-left flex items-center space-x-2 hover:bg-[#EBE2D0] cursor-pointer"
+                >
+                  <Upload className="w-4 h-4 text-[#786958]" />
+                  <span>JSON Yedeği Yükle</span>
+                </button>
+
+                <div className="my-1 border-t border-[#DCD0B9]"></div>
+
+                <button
+                  onClick={() => {
+                    setIsMoreMenuOpen(false);
+                    onOpenSettings();
+                  }}
+                  className="w-full px-4 py-2.5 text-left flex items-center space-x-2 hover:bg-[#EBE2D0] cursor-pointer"
+                >
+                  <Settings className="w-4 h-4 text-[#786958]" />
+                  <span>Ayarlar & API Key</span>
+                </button>
+
+                {currentUser && !currentUser.isAnonymous && (
+                  <button
+                    onClick={() => {
+                      setIsMoreMenuOpen(false);
+                      onLogout();
+                    }}
+                    className="w-full px-4 py-2.5 text-left flex items-center space-x-2 hover:bg-rose-100 hover:text-rose-900 cursor-pointer text-rose-700"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Çıkış Yap</span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
-          <div className="hidden lg:flex items-center space-x-4 text-xs text-slate-400 pl-4 border-l border-slate-800">
-            <span><b>{cards.length}</b> Kayıtlı Bağlantı</span>
-            <span><b>{totalNotesLength}</b> Karakter Not</span>
-          </div>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImportFile}
+            accept=".json"
+            className="hidden"
+          />
 
         </div>
 

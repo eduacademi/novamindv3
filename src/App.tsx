@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { User } from "firebase/auth";
+import { Toaster, toast } from "sonner";
 import { Header } from "./components/Header";
 import { CardGrid } from "./components/CardGrid";
 import { RemindersWidget } from "./components/RemindersWidget";
@@ -12,9 +13,17 @@ import { PreviewModal } from "./components/PreviewModal";
 import { PwaShareNotice } from "./components/PwaShareNotice";
 import { SettingsModal } from "./components/SettingsModal";
 import { PricingModal } from "./components/Subscription/PricingModal";
+import { CommandPalette } from "./components/CommandPalette";
+import { ReaderModeModal } from "./components/ReaderModeModal";
+import { DailyDigestWidget } from "./components/DailyDigestWidget";
+import { AuthModal } from "./components/AuthModal";
+import { UserDashboardModal } from "./components/UserDashboardModal";
+import { ChatWidget } from "./components/ChatWidget";
+import { FocusOnboarding } from "./components/FocusOnboarding";
+import { ProjectsHub } from "./components/ProjectsHub";
 import { useSubscription } from "./hooks/useSubscription";
-import { Card, ReminderItem } from "./types";
-import { getCards, saveCards, getReminders, saveReminders } from "./lib/storage";
+import { Card, Project, ReminderItem, UserFocus } from "./types";
+import { getCards, saveCards, getReminders, saveReminders, getProjects, getUserFocus, saveProjects, saveUserFocus } from "./lib/storage";
 import {
   initFirebaseAuth,
   loginWithGoogle,
@@ -33,18 +42,39 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [cards, setCards] = useState<Card[]>(getCards());
   const [reminders, setReminders] = useState<ReminderItem[]>(getReminders());
-  const [activeTab, setActiveTab] = useState<"library" | "mindmap" | "ideas">("mindmap");
+  const [activeTab, setActiveTab] = useState<"library" | "mindmap" | "ideas">("library");
+  const [userFocus, setUserFocus] = useState<UserFocus | null>(getUserFocus());
+  const [projects, setProjects] = useState<Project[]>(getProjects());
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   
   const [selectedCardIds, setSelectedCardIds] = useState<string[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewCard, setPreviewCard] = useState<Card | null>(null);
+  const [readerCard, setReaderCard] = useState<Card | null>(null);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isUserDashboardOpen, setIsUserDashboardOpen] = useState(false);
+  const [isChatWidgetOpen, setIsChatWidgetOpen] = useState(false);
   const [isPwaInfoOpen, setIsPwaInfoOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [initialShareUrl, setInitialShareUrl] = useState("");
   const [initialShareTitle, setInitialShareTitle] = useState("");
-  const [notification, setNotification] = useState<string | null>(null);
+
+  const { subscription, isPricingModalOpen, setIsPricingModalOpen, initiateCheckout, isLoading } = useSubscription();
+
+  // Cmd+K / Ctrl+K Command Palette Shortcut Listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Firebase Init Auth Listener
   useEffect(() => {
@@ -106,8 +136,7 @@ export default function App() {
             items.forEach((item: Card) => {
               handleSaveCard(item);
             });
-            setNotification(`Tarayıcı eklentisinden ${items.length} yeni bağlantı başarıyla kaydedildi!`);
-            setTimeout(() => setNotification(null), 4000);
+            toast.success(`Tarayıcı eklentisinden ${items.length} yeni bağlantı başarıyla eklendi!`);
           }
         }
       } catch (err) {
@@ -140,8 +169,9 @@ export default function App() {
   const handleLoginGoogle = async () => {
     try {
       await loginWithGoogle();
+      toast.success("Google hesabınızla başarıyla giriş yapıldı.");
     } catch (err) {
-      alert("Google ile giriş yapılamadı.");
+      toast.error("Google ile giriş yapılamadı. Lütfen tekrar deneyin.");
     }
   };
 
@@ -149,6 +179,7 @@ export default function App() {
     await logoutFirebase();
     setCards([]);
     setReminders([]);
+    toast.info("Oturum kapatıldı.");
   };
 
   // Reminder Handlers
@@ -255,19 +286,50 @@ export default function App() {
     setIsPreviewOpen(true);
   };
 
+  const handleChooseFocus = (focus: UserFocus) => {
+    saveUserFocus(focus);
+    setUserFocus(focus);
+    setActiveTab("library");
+    toast.success(focus === "creator" ? "Üretici çalışma alanın hazır." : "Araştırma çalışma alanın hazır.");
+  };
+
+  const handleCreateProject = (input: Pick<Project, "title" | "description" | "focus">) => {
+    const project: Project = {
+      id: `project-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      ...input,
+      created_at: Date.now(),
+    };
+    const updated = [project, ...projects];
+    setProjects(updated);
+    saveProjects(updated);
+    setSelectedProjectId(project.id);
+    toast.success(`“${project.title}” projesi oluşturuldu.`);
+  };
+
+  const handleDeleteProject = (projectId: string) => {
+    const project = projects.find((item) => item.id === projectId);
+    const updated = projects.filter((item) => item.id !== projectId);
+    setProjects(updated);
+    saveProjects(updated);
+    if (selectedProjectId === projectId) setSelectedProjectId(null);
+    toast.info(`“${project?.title || "Proje"}” silindi. Kaynakların kütüphanende kalır.`);
+  };
+
+  const selectedProject = projects.find((project) => project.id === selectedProjectId) || null;
+  const cardsCountByProject = cards.reduce<Record<string, number>>((counts, card) => {
+    card.projectIds?.forEach((projectId) => {
+      counts[projectId] = (counts[projectId] || 0) + 1;
+    });
+    return counts;
+  }, {});
+
   return (
     <div className="min-h-screen bg-[#0b0f19] text-slate-200 flex flex-col selection:bg-indigo-500/30 selection:text-white">
       
-      {/* Dynamic Toast Notification */}
-      {notification && (
-        <div className="fixed top-20 right-4 z-50 bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-lg border border-emerald-500 font-medium text-sm flex items-center space-x-2 animate-in slide-in-from-top-4 duration-300">
-          <span class="relative flex h-2 w-2">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-200"></span>
-          </span>
-          <span>{notification}</span>
-        </div>
-      )}
+      {/* Sonner Toast Provider */}
+      <Toaster position="bottom-right" theme="dark" richColors />
+
+      {!userFocus && <FocusOnboarding onChoose={handleChooseFocus} />}
 
       {/* Header Bar */}
       <Header
@@ -282,8 +344,11 @@ export default function App() {
         onRefreshData={refreshData}
         onOpenPwaInfo={() => setIsPwaInfoOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenPricing={() => setIsPricingModalOpen(true)}
+        onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        onOpenUserDashboard={() => setIsUserDashboardOpen(true)}
         currentUser={currentUser}
-        onLoginWithGoogle={handleLoginGoogle}
         onLogout={handleLogout}
       />
 
@@ -293,7 +358,22 @@ export default function App() {
         {/* TAB 1: Library & Main Dashboard */}
         {activeTab === "library" && (
           <div className="space-y-6">
+            <ProjectsHub
+              projects={projects}
+              cardsCountByProject={cardsCountByProject}
+              selectedProjectId={selectedProjectId}
+              defaultFocus={userFocus}
+              onCreate={handleCreateProject}
+              onSelect={setSelectedProjectId}
+              onDelete={handleDeleteProject}
+            />
             
+            {/* Daily Digest Spaced Repetition Widget */}
+            <DailyDigestWidget
+              cards={cards}
+              onOpenReader={(card) => setReaderCard(card)}
+            />
+
             {/* Weekly Rediscovery Digest Banner */}
             <WeeklyDigestWidget
               cards={cards}
@@ -317,6 +397,9 @@ export default function App() {
                 onOpenAddModal={() => setIsAddModalOpen(true)}
                 onOpenPreview={handleOpenPreview}
                 onOpenExportModal={() => setIsExportModalOpen(true)}
+                selectedProjectId={selectedProjectId}
+                selectedProjectName={selectedProject?.title || null}
+                onClearProjectFilter={() => setSelectedProjectId(null)}
               />
             </div>
 
@@ -340,6 +423,8 @@ export default function App() {
             cards={cards}
             selectedCardIds={selectedCardIds}
             onClearSelectedCards={handleClearSelectedCards}
+            onOpenPreview={handleOpenPreview}
+            onOpenReader={(card) => setReaderCard(card)}
           />
         )}
 
@@ -353,6 +438,41 @@ export default function App() {
 
       </main>
 
+      {/* Auth Modal (Google & Email/Password Sign in) */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
+
+      {/* User Account & Subscription Dashboard Modal */}
+      <UserDashboardModal
+        isOpen={isUserDashboardOpen}
+        onClose={() => setIsUserDashboardOpen(false)}
+        currentUser={currentUser}
+        subscription={subscription}
+        cards={cards}
+        reminders={reminders}
+        onOpenPricingModal={() => setIsPricingModalOpen(true)}
+        onRefreshData={refreshData}
+      />
+
+      {/* Command Palette (Cmd+K / Ctrl+K) */}
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        cards={cards}
+        onSelectCard={(card) => setReaderCard(card)}
+        onOpenAddModal={() => setIsAddModalOpen(true)}
+        onSwitchTab={(tab) => setActiveTab(tab)}
+        onOpenPricingModal={() => setIsPricingModalOpen(true)}
+      />
+
+      {/* Reader Mode Modal */}
+      <ReaderModeModal
+        card={readerCard}
+        onClose={() => setReaderCard(null)}
+      />
+
       {/* Add Card Modal */}
       <AddCardModal
         isOpen={isAddModalOpen}
@@ -361,6 +481,8 @@ export default function App() {
         existingCards={cards}
         initialUrl={initialShareUrl}
         initialTitle={initialShareTitle}
+        userFocus={userFocus}
+        activeProject={selectedProject}
       />
 
       {/* PWA Share Information Dialog */}
@@ -393,6 +515,32 @@ export default function App() {
         }}
         onUpdateCard={handleUpdateCard}
         onDeleteCard={handleDeleteCard}
+      />
+
+      {/* Subscription Pricing Modal */}
+      <PricingModal
+        isOpen={isPricingModalOpen}
+        onClose={() => setIsPricingModalOpen(false)}
+        currentPlan={subscription?.plan || "free"}
+        onSelectPlan={initiateCheckout}
+        isLoading={isLoading}
+      />
+
+      {/* Floating AI Chat Assistant Trigger Button */}
+      <button
+        onClick={() => setIsChatWidgetOpen(prev => !prev)}
+        className="fixed bottom-6 right-6 z-40 p-3.5 bg-gradient-to-tr from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white rounded-full shadow-2xl shadow-indigo-600/50 flex items-center space-x-2 transition-all hover:scale-105 cursor-pointer border border-indigo-400/40"
+        title="AI Asistan ile Kütüphanene Sor"
+      >
+        <svg className="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-1.012-.862c.16-.838.455-1.637.868-2.366C4.168 16.326 3 14.28 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"></path></svg>
+        <span className="hidden sm:inline text-xs font-bold">AI Kütüphane Asistanı</span>
+      </button>
+
+      {/* Chat Widget Modal */}
+      <ChatWidget
+        cards={cards}
+        isOpen={isChatWidgetOpen}
+        onClose={() => setIsChatWidgetOpen(false)}
       />
 
       {/* Minimal Footer */}

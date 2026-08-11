@@ -65,16 +65,16 @@ router.post("/subscription/webhook/shopier", async (req, res, next) => {
 
     // Status 'success' in Shopier webhook
     if (status === "success" || status === "1") {
-      // OrderId format: NM-PRO-userIdFirst8-timestamp
-      const parts = (platform_order_id || "").split("-");
+      // OrderId format: NM_PLAN_fullUserId_timestamp
+      const parts = (platform_order_id || "").split("_");
       const plan = (parts[1] || "PRO").toLowerCase() as PlanType;
-      const userShortId = parts[2] || "";
+      const fullUserId = parts[2] || "";
 
       console.log(`✅ Payment received via Shopier for order ${platform_order_id}, plan: ${plan}`);
 
-      if (userShortId) {
+      if (fullUserId) {
         await updateUserSubscriptionInDb({
-          userId: userShortId,
+          userId: fullUserId,
           plan: ["pro", "premium"].includes(plan) ? plan : "pro",
           paymentProvider: "shopier",
           orderId: platform_order_id,
@@ -91,6 +91,10 @@ router.post("/subscription/webhook/shopier", async (req, res, next) => {
 
 // 4. Test Checkout Route (Development Payment Simulation)
 router.get("/subscription/test-checkout", async (req, res) => {
+  if (process.env.NODE_ENV === "production" && !process.env.ALLOW_TEST_CHECKOUT) {
+    return res.status(403).send("Test checkout is disabled in production.");
+  }
+
   const { orderId, plan, userId } = req.query;
 
   if (!userId || !plan) {

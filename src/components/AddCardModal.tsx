@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X as CloseIcon, Link as LinkIcon, Sparkles, AlertCircle, Loader2, Tag, BookOpen, Check, ClipboardPaste, Layers, Trash2, Globe, Youtube, Instagram, Video, MessageSquare, Pin, Twitter, AtSign, FileText } from "lucide-react";
-import { Card, Platform } from "../types";
+import { Card, Platform, Project, UserFocus } from "../types";
 import { detectPlatform, PLATFORMS } from "../lib/platformHelper";
 import { decodeHTMLEntities } from "../lib/textHelper";
 
@@ -11,6 +11,8 @@ interface AddCardModalProps {
   existingCards: Card[];
   initialUrl?: string;
   initialTitle?: string;
+  userFocus?: UserFocus | null;
+  activeProject?: Project | null;
 }
 
 export function extractUrlsFromText(text: string): string[] {
@@ -47,6 +49,8 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
   existingCards,
   initialUrl = "",
   initialTitle = "",
+  userFocus = null,
+  activeProject = null,
 }) => {
   const [url, setUrl] = useState(initialUrl);
   const [platform, setPlatform] = useState<Platform>("other");
@@ -67,6 +71,18 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
   const [bulkText, setBulkText] = useState("");
   const [bulkItems, setBulkItems] = useState<BulkItemPreview[]>([]);
   const [isFetchingBatch, setIsFetchingBatch] = useState(false);
+  const isCreator = userFocus === "creator";
+  const focusCopy = isCreator
+    ? {
+        title: "Bunu sonra ne üretebilmek için saklıyorsun?",
+        description: "Kısa bir açı, hook veya içerik fikri yaz. NovaMind bunu sonraki üretim önerilerinde kullanacak.",
+        placeholder: "Örn: Bu fikri 'AI araçları' video serisinde karşılaştırmalı bir bölüm olarak kullan.",
+      }
+    : {
+        title: "Bu kaynak araştırman için neden önemli?",
+        description: "Bir bulgu, soru veya kontrol etmek istediğin noktayı ekle. NovaMind bunu sonraki sentezlerde kullanacak.",
+        placeholder: "Örn: Bu kaynağın iddiasını diğer iki makaleyle karşılaştır; yöntemini ayrıca kontrol et.",
+      };
 
   useEffect(() => {
     if (isOpen) {
@@ -327,6 +343,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
         metadata_source: "auto",
         created_at: Date.now() + i,
         is_favorite: false,
+        projectIds: activeProject ? [activeProject.id] : [],
       }));
 
       onSave(newCards);
@@ -382,6 +399,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
       metadata_source: title ? "auto" : "manual",
       created_at: Date.now(),
       is_favorite: false,
+      projectIds: activeProject ? [activeProject.id] : [],
     };
 
     onSave(newCard);
@@ -510,6 +528,25 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
             </button>
           </div>
 
+          {userFocus && addMode !== "bulk" && (
+            <div className={`rounded-xl border p-3.5 ${isCreator ? "border-orange-200 bg-orange-50" : "border-cyan-200 bg-cyan-50"}`}>
+              <div className="flex items-start gap-2">
+                <Sparkles className={`mt-0.5 h-4 w-4 shrink-0 ${isCreator ? "text-orange-600" : "text-cyan-700"}`} />
+                <div>
+                  <p className={`text-xs font-bold ${isCreator ? "text-orange-950" : "text-cyan-950"}`}>{focusCopy.title}</p>
+                  <p className={`mt-1 text-[11px] leading-5 ${isCreator ? "text-orange-800" : "text-cyan-800"}`}>{focusCopy.description}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeProject && (
+            <div className="flex items-center gap-2 rounded-xl border border-[#DCD0B9] bg-[#FBF7EC] px-3 py-2 text-xs text-[#5A4A34]">
+              <Layers className="h-4 w-4 text-[#D85A30]" />
+              Bu kaynak <strong>{activeProject.title}</strong> projesine eklenecek.
+            </div>
+          )}
+
           {/* MODE 1: LINK ADDS */}
           {addMode === "link" && (
             <>
@@ -592,13 +629,13 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
               <div className="p-3.5 bg-indigo-50/50 border border-indigo-100 rounded-xl space-y-1.5">
                 <label className="block text-xs font-bold text-indigo-900 flex items-center space-x-1.5">
                   <BookOpen className="w-4 h-4 text-indigo-600" />
-                  <span>Sizin Notunuz & Fikriniz (Opsiyonel)</span>
+                  <span>{userFocus ? (isCreator ? "İçerik Açınız / Hook'unuz" : "Araştırma Notunuz / Sorunuz") : "Sizin Notunuz & Fikriniz (Opsiyonel)"}</span>
                 </label>
                 <textarea
                   rows={2}
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  placeholder={currentPlatformInfo.notesTip}
+                  placeholder={userFocus ? focusCopy.placeholder : currentPlatformInfo.notesTip}
                   className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 />
               </div>
@@ -1108,4 +1145,3 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
     </div>
   );
 };
-

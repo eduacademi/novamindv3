@@ -1,1 +1,30 @@
 @import "tailwindcss";
+
+@layer utilities {
+  .font-serif-fraunces {
+    font-family: 'Fraunces', serif;
+  }
+  .font-handwriting {
+    font-family: 'Caveat', cursive;
+  }
+  .paper-grid {
+    background-color: #E9DFC4;
+    background-image: radial-gradient(#00000014 1px, transparent 1px);
+    background-size: 14px 14px;
+  }
+  .paper-card-shadow {
+    box-shadow: 0 10px 25px -5px rgba(40, 30, 15, 0.18), 0 8px 10px -6px rgba(40, 30, 15, 0.1);
+  }
+  .pushpin {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #F0997B, #993C1D);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+  }
+  .washi-tape {
+    background: #D8B98A;
+    opacity: 0.85;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+}

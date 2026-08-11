@@ -11,6 +11,9 @@ import {
   ChevronDown,
   Calendar,
   Eye,
+  FolderTree,
+  Folder,
+  FileText,
   ZoomIn,
   ZoomOut,
   RotateCcw,
@@ -34,6 +37,8 @@ interface MindMapViewerProps {
   cards: Card[];
   selectedCardIds: string[];
   onClearSelectedCards: () => void;
+  onOpenPreview?: (card: Card) => void;
+  onOpenReader?: (card: Card) => void;
 }
 
 interface DateGroup {
@@ -84,6 +89,8 @@ interface Particle {
 export const MindMapViewer: React.FC<MindMapViewerProps> = ({
   cards,
   selectedCardIds,
+  onOpenPreview,
+  onOpenReader,
 }) => {
   const [mindmapData, setMindmapData] = useState<MindMapData | null>(getCachedMindMap());
   const [isLoading, setIsLoading] = useState(false);
@@ -107,6 +114,25 @@ export const MindMapViewer: React.FC<MindMapViewerProps> = ({
   const [selectedPlatformFilter, setSelectedPlatformFilter] = useState<string>("all");
   const [nodeLimitFilter, setNodeLimitFilter] = useState<number>(0); // 0 = all
   const [clusteringEnabled, setClusteringEnabled] = useState<boolean>(false);
+  const [isNeo4jActive, setIsNeo4jActive] = useState<boolean | null>(null);
+
+  // Sync cards with Neo4j Graph DB in the background
+  useEffect(() => {
+    if (cards.length > 0) {
+      fetch("/api/graph/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cards }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          setIsNeo4jActive(!!data.success);
+        })
+        .catch(() => {
+          setIsNeo4jActive(false);
+        });
+    }
+  }, [cards]);
 
   // Canvas State & Controls
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -558,34 +584,22 @@ export const MindMapViewer: React.FC<MindMapViewerProps> = ({
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.scale(dpr, dpr); // Normalise DPR to CSS pixels
 
-      // Background color
-      if (isDarkMode) {
-        ctx.fillStyle = "#090D16"; // Obsidian dark
-      } else {
-        ctx.fillStyle = "#F8FAFC"; // Clean light
-      }
+      // Background color (Warm Parşömen Dot Grid)
+      ctx.fillStyle = "#E9DFC4";
       ctx.fillRect(0, 0, width, height);
+
+      // Draw subtle grid dots
+      ctx.fillStyle = "rgba(0, 0, 0, 0.08)";
+      const dotSpacing = 20;
+      for (let x = 0; x < width; x += dotSpacing) {
+        for (let y = 0; y < height; y += dotSpacing) {
+          ctx.fillRect(x, y, 1.2, 1.2);
+        }
+      }
 
       // Apply Zoom & Pan Transformations in CSS pixel space
       ctx.translate(centerX, centerY);
       ctx.scale(zoomLevel, zoomLevel);
-
-      // Render Floating Dust Particles
-      particles.forEach((p) => {
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.x > 900) p.x = -900;
-        if (p.x < -900) p.x = 900;
-        if (p.y > 700) p.y = -700;
-        if (p.y < -700) p.y = 700;
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = isDarkMode
-          ? `rgba(99, 102, 241, ${p.alpha * 0.6})`
-          : `rgba(99, 102, 241, ${p.alpha * 0.3})`;
-        ctx.fill();
-      });
 
       // Search & Category Filter Matching
       const isMatchingFilter = (n: GraphNode) => {
@@ -601,7 +615,7 @@ export const MindMapViewer: React.FC<MindMapViewerProps> = ({
         );
       };
 
-      // 3. Draw Visible Synaptic Links (with Smooth Neural Beam Propagation)
+      // 3. Draw Visible Links as Red Threads (Detektif Panosu Kırmızı İpleri)
       visibleLinks.forEach((link) => {
         const sourceNode = visibleNodes.find((n) => n.id === link.source);
         const targetNode = visibleNodes.find((n) => n.id === link.target);
@@ -615,74 +629,34 @@ export const MindMapViewer: React.FC<MindMapViewerProps> = ({
         const isTargetMatch = isMatchingFilter(targetNode);
         const isDimmed = !isSourceMatch || !isTargetMatch;
 
-        // Stagger link growth based on depth
         const depthDelay = sourceNode.type === "root" ? 0 : 0.22;
         const duration = 0.55;
         const rawLinkProgress = Math.min(1, Math.max(0, (entranceT - depthDelay) / duration));
-        // Cubic ease-out deceleration
         const linkGrowth = 1 - Math.pow(1 - rawLinkProgress, 3);
 
         if (linkGrowth <= 0) return;
 
-        // Calculate animated endpoint of the neural link beam
         const currentX = sourceNode.x + (targetNode.x - sourceNode.x) * linkGrowth;
         const currentY = sourceNode.y + (targetNode.y - sourceNode.y) * linkGrowth;
 
+        // Draw Thread Shadow
+        ctx.beginPath();
+        ctx.moveTo(sourceNode.x + 2, sourceNode.y + 3);
+        ctx.lineTo(currentX + 2, currentY + 3);
+        ctx.strokeStyle = "rgba(40, 30, 15, 0.15)";
+        ctx.lineWidth = isHighlighted ? 3 : 2;
+        ctx.stroke();
+
+        // Draw Crimson Red Thread Line
         ctx.beginPath();
         ctx.moveTo(sourceNode.x, sourceNode.y);
         ctx.lineTo(currentX, currentY);
-
-        ctx.lineWidth = isHighlighted ? 3 : (1 + linkGrowth * 0.5);
-
-        // Linear gradient for neural electric current line
-        const linkGrad = ctx.createLinearGradient(sourceNode.x, sourceNode.y, currentX, currentY);
-        if (isDarkMode) {
-          linkGrad.addColorStop(0, isHighlighted ? link.color : "rgba(99, 102, 241, 0.45)");
-          linkGrad.addColorStop(1, isHighlighted ? "#38BDF8" : link.color);
-        } else {
-          linkGrad.addColorStop(0, link.color);
-          linkGrad.addColorStop(1, "#4F46E5");
-        }
-
-        ctx.strokeStyle = isDimmed ? (isDarkMode ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)") : linkGrad;
-
-        // Neural glow effect during entrance or hover
-        if ((linkGrowth < 1 || isHighlighted) && !isDimmed) {
-          ctx.shadowBlur = isDarkMode ? 12 : 6;
-          ctx.shadowColor = link.color;
-        }
-
+        ctx.strokeStyle = isDimmed ? "rgba(169, 50, 38, 0.2)" : (isHighlighted ? "#C0392B" : "#A93226");
+        ctx.lineWidth = isHighlighted ? 2.5 : 1.8;
         ctx.stroke();
-        ctx.shadowBlur = 0;
-
-        // Glowing spark tip traveling along line during beam creation
-        if (linkGrowth > 0.02 && linkGrowth < 0.98 && !isDimmed) {
-          ctx.beginPath();
-          ctx.arc(currentX, currentY, isDarkMode ? 3.5 : 2.5, 0, Math.PI * 2);
-          ctx.fillStyle = "#FFFFFF";
-          ctx.shadowBlur = 12;
-          ctx.shadowColor = link.color;
-          ctx.fill();
-          ctx.shadowBlur = 0;
-        }
-
-        // Synaptic Pulse Dots travelling after line is established
-        if ((isHighlighted || !isDimmed) && linkGrowth >= 0.85) {
-          const pulseT = (pulseOffset.current % 1);
-          const px = sourceNode.x + (targetNode.x - sourceNode.x) * pulseT;
-          const py = sourceNode.y + (targetNode.y - sourceNode.y) * pulseT;
-
-          ctx.beginPath();
-          ctx.arc(px, py, isHighlighted ? 3.5 : 2, 0, Math.PI * 2);
-          ctx.fillStyle = link.color;
-          ctx.shadowBlur = 8;
-          ctx.shadowColor = link.color;
-          ctx.fill();
-          ctx.shadowBlur = 0;
-        }
       });
 
-      // 4. Draw Visible Nodes (with Elastic Spring Pop-In)
+      // 4. Draw Visible Nodes as Pins on Detective Board
       visibleNodes.forEach((node) => {
         const isHovered = hoveredNodeIdRef.current === node.id;
         const isSelected = selectedGraphNodeRef.current?.id === node.id;
@@ -691,7 +665,6 @@ export const MindMapViewer: React.FC<MindMapViewerProps> = ({
         const nodeStart = node.type === "root" ? 0 : node.type === "category" ? 0.15 : 0.35;
         const rawNodeProg = Math.min(1, Math.max(0, (entranceT - nodeStart) / 0.45));
         
-        // Elastic spring overshoot formula
         const popScale = rawNodeProg === 0 ? 0 : rawNodeProg < 1
           ? 1 + 2.2 * Math.pow(rawNodeProg - 1, 3) + 1.2 * Math.pow(rawNodeProg - 1, 2)
           : 1;
@@ -701,33 +674,47 @@ export const MindMapViewer: React.FC<MindMapViewerProps> = ({
         const baseRadius = (isHovered || isSelected) ? node.radius * 1.08 : node.radius;
         const currentRadius = baseRadius * Math.max(0, popScale);
 
-        // Outer Halo / Pulse Ring
-        if (isHovered || isSelected || node.type === "root" || node.isPinned) {
-          ctx.beginPath();
-          ctx.arc(node.x, node.y, currentRadius + (node.type === "root" ? 10 : 6), 0, Math.PI * 2);
-          ctx.fillStyle = node.isPinned ? "#38BDF8" : node.color;
-          ctx.globalAlpha = node.isPinned ? 0.35 : 0.2;
-          ctx.fill();
-          ctx.globalAlpha = 1.0;
-        }
+        // Node Paper Shadow
+        ctx.beginPath();
+        ctx.arc(node.x + 2, node.y + 4, currentRadius, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(40, 30, 15, 0.18)";
+        ctx.fill();
 
-        // Node Circle Body (Balloon)
+        // Node Paper Body (#FBF7EC Cream Paper)
         ctx.beginPath();
         ctx.arc(node.x, node.y, currentRadius, 0, Math.PI * 2);
-        
-        ctx.shadowBlur = isHovered || isSelected ? 16 : 8;
-        ctx.shadowColor = node.color;
-        
-        ctx.fillStyle = node.color;
-        if (!isMatched) ctx.globalAlpha = 0.25;
+        ctx.fillStyle = isSelected ? "#F4EFE6" : "#FBF7EC";
+        if (!isMatched) ctx.globalAlpha = 0.35;
         ctx.fill();
-        ctx.shadowBlur = 0;
+        ctx.lineWidth = isHovered || isSelected ? 2.5 : 1.5;
+        ctx.strokeStyle = isSelected ? "#D85A30" : (isHovered ? "#6B5A47" : "#DCD0B9");
+        ctx.stroke();
         ctx.globalAlpha = 1.0;
 
-        // Inner Icon / Center Pulse
+        // Inner Category Accent Circle
         ctx.beginPath();
-        ctx.arc(node.x, node.y, currentRadius * 0.38, 0, Math.PI * 2);
-        ctx.fillStyle = "#FFFFFF";
+        ctx.arc(node.x, node.y, currentRadius * 0.42, 0, Math.PI * 2);
+        ctx.fillStyle = node.color || "#D85A30";
+        ctx.fill();
+
+        // 3D Red Pushpin at top center of node
+        const pinX = node.x;
+        const pinY = node.y - currentRadius * 0.85;
+
+        // Pushpin Shadow
+        ctx.beginPath();
+        ctx.arc(pinX + 1.5, pinY + 2, 5, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(40, 30, 15, 0.3)";
+        ctx.fill();
+
+        // Pushpin Body
+        ctx.beginPath();
+        ctx.arc(pinX, pinY, 4.5, 0, Math.PI * 2);
+        const pinGrad = ctx.createRadialGradient(pinX - 1.5, pinY - 1.5, 0.5, pinX, pinY, 4.5);
+        pinGrad.addColorStop(0, "#F0997B");
+        pinGrad.addColorStop(0.7, "#D85A30");
+        pinGrad.addColorStop(1, "#993C1D");
+        ctx.fillStyle = pinGrad;
         ctx.fill();
 
         // Child Branch Expand / Collapse Badge
@@ -987,58 +974,79 @@ export const MindMapViewer: React.FC<MindMapViewerProps> = ({
     setExpandedDates(newSet);
   };
 
-  // Render tree node recursively (AI Mode - Vertical)
+  // Render tree node recursively (AI Mode - Manila Folder & Index Card Style)
   const renderTreeNodeVertical = (node: MindMapNode, depth = 0) => {
     const isCollapsed = collapsedNodeIds.has(node.id);
     const hasChildren = node.children && node.children.length > 0;
     const matchingCards = cards.filter((c) => node.cardIds && node.cardIds.includes(c.id));
+    const showCardBadge = matchingCards.length >= 2; // Hide "1 Kart" noise
 
     return (
-      <div key={node.id} className="relative pl-4 sm:pl-8 border-l-2 border-indigo-200/80 my-2">
+      <div key={node.id} className="relative pl-5 sm:pl-7 border-l-2 border-[#DCD0B9] my-2">
+        
+        {/* Horizontal Connector Arm */}
+        <div className="absolute -left-[2px] top-5 w-4 h-0.5 bg-[#DCD0B9]" />
+
         <div
           onClick={() => setSelectedAiNode(node)}
-          className="group cursor-pointer p-3.5 rounded-2xl bg-white border border-slate-200 hover:border-indigo-400 shadow-sm hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+          className={`group cursor-pointer p-3.5 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
+            depth === 0
+              ? "bg-[#EBE2D0] border-[#DCD0B9] shadow-2xs text-[#3A2E22]"
+              : "bg-[#FBF7EC] border-[#DCD0B9] hover:border-[#D85A30] hover:bg-white text-[#3A2E22] shadow-2xs"
+          }`}
         >
-          <div className="flex items-center space-x-2.5">
-            {hasChildren && (
+          <div className="flex items-center space-x-3 min-w-0">
+            {hasChildren ? (
               <button
                 onClick={(e) => toggleNodeCollapse(node.id, e)}
-                className="p-1 hover:bg-slate-100 rounded-lg text-slate-400"
+                className="p-1 hover:bg-[#E2D6C0] rounded text-[#6B5A47] transition-colors cursor-pointer shrink-0"
               >
                 {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </button>
+            ) : (
+              <div className="w-4 h-4 shrink-0" />
             )}
 
-            <div
-              className="w-3.5 h-3.5 rounded-full shrink-0 shadow-xs"
-              style={{ backgroundColor: node.color || (depth === 0 ? "#4F46E5" : depth === 1 ? "#F59E0B" : "#10B981") }}
-            />
+            {/* Folder / Index Card Icon */}
+            {depth === 0 ? (
+              <FolderTree className="w-4 h-4 text-[#D85A30] shrink-0" />
+            ) : hasChildren ? (
+              <Folder className="w-4 h-4 text-[#6B5A47] shrink-0" />
+            ) : (
+              <FileText className="w-4 h-4 text-[#8A7B5E] shrink-0" />
+            )}
 
-            <div>
-              <h4 className="font-bold text-sm text-slate-900 flex items-center space-x-2">
-                <span>{decodeHTMLEntities(node.label)}</span>
-                {matchingCards.length > 0 && (
-                  <span className="px-2 py-0.5 text-[10px] bg-indigo-100 text-indigo-800 font-bold rounded-full">
-                    {matchingCards.length} Bağlı Kart
+            <div className="min-w-0">
+              <div className="flex items-center space-x-2 flex-wrap gap-1">
+                <h4 className="font-bold text-sm font-sans text-[#3A2E22] group-hover:text-[#D85A30] transition-colors">
+                  {decodeHTMLEntities(node.label)}
+                </h4>
+                {/* Only show badge for 2+ cards */}
+                {showCardBadge && (
+                  <span className="px-2 py-0.5 text-[10px] bg-[#D85A30] text-[#FBF7EC] font-bold rounded-xs shadow-2xs">
+                    {matchingCards.length} Kart
                   </span>
                 )}
-              </h4>
+              </div>
               {node.summary && (
-                <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">
+                <p className="text-xs text-[#786958] font-light mt-0.5 line-clamp-1">
                   {decodeHTMLEntities(node.summary)}
                 </p>
               )}
             </div>
           </div>
 
-          <div className="text-[11px] text-indigo-600 font-semibold group-hover:underline self-end sm:self-center shrink-0 flex items-center space-x-1">
-            <span>İncele</span>
-            <Eye className="w-3.5 h-3.5" />
-          </div>
+          {/* CTA Button: ONLY show on nodes with matching cards or leaf nodes */}
+          {(matchingCards.length > 0 || !hasChildren) && (
+            <div className="text-xs text-[#D85A30] font-bold group-hover:underline self-end sm:self-center shrink-0 flex items-center space-x-1 px-2.5 py-1 rounded bg-[#EBE2D0] border border-[#DCD0B9]">
+              <span>Kartları İncele</span>
+              <Eye className="w-3.5 h-3.5" />
+            </div>
+          )}
         </div>
 
         {!isCollapsed && hasChildren && (
-          <div className="space-y-1 mt-2">
+          <div className="space-y-1.5 mt-1.5">
             {node.children!.map((child) => renderTreeNodeVertical(child, depth + 1))}
           </div>
         )}
@@ -1086,22 +1094,24 @@ export const MindMapViewer: React.FC<MindMapViewerProps> = ({
   return (
     <div className="space-y-6">
       
-      {/* Knowledge Graph Main Control Header */}
-      <div className="bg-white border border-slate-200 p-5 rounded-3xl shadow-sm space-y-4">
+      {/* Knowledge Graph Control Header (Modern Analog Paper Theme) */}
+      <div className="bg-[#FBF7EC] border border-[#DCD0B9] p-5 rounded-2xl shadow-sm space-y-4 text-[#3A2E22]">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center space-x-3">
-            <div className="p-3 bg-gradient-to-tr from-indigo-600 to-purple-600 text-white rounded-2xl shadow-md shadow-indigo-500/20">
-              <Network className="w-6 h-6 animate-pulse" />
+            <div className="p-2.5 bg-[#EBE2D0] border border-[#DCD0B9] text-[#D85A30] rounded-xl shadow-2xs">
+              <Network className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-900 font-serif flex items-center space-x-2">
-                <span>NovaMind Interaktif Knowledge Graph</span>
-                <span className="text-[10px] font-sans px-2.5 py-0.5 bg-indigo-100 text-indigo-800 font-extrabold rounded-full border border-indigo-200 uppercase tracking-wider">
-                  Nöral Ağ & Snaps Simülasyonu
-                </span>
+              <h2 className="text-base font-bold font-serif-fraunces text-[#3A2E22] flex items-center space-x-2">
+                <span>Fikir Bağlantıları & Detektif Panosu</span>
+                {isNeo4jActive && (
+                  <span className="text-[10px] font-mono px-2 py-0.5 bg-emerald-100 text-emerald-800 font-bold rounded border border-emerald-200">
+                    Neo4j Live
+                  </span>
+                )}
               </h2>
-              <p className="text-xs text-slate-500">
-                Notlarınız arasındaki nöronal sinaptik bağları canlı fizik simülasyonu ile keşfedin. Düğümleri sürükleyip taşıyabilirsiniz.
+              <p className="text-xs text-[#786958] font-light">
+                Kırmızı iplerle birbirine bağlı raptiyeli fikir notlarınızın canlı analizi.
               </p>
             </div>
           </div>
@@ -1112,7 +1122,7 @@ export const MindMapViewer: React.FC<MindMapViewerProps> = ({
               <button
                 onClick={() => handleGenerateMindMap(true)}
                 disabled={isLoading}
-                className="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold text-xs rounded-xl flex items-center space-x-1.5 shadow-sm transition-all disabled:opacity-50"
+                className="px-3.5 py-2 bg-[#D85A30] hover:bg-[#C84A20] text-[#FBF7EC] font-bold text-xs rounded-xl flex items-center space-x-1.5 shadow-sm transition-all disabled:opacity-50 cursor-pointer"
               >
                 <Sparkles className="w-4 h-4" />
                 <span>Seçilen {selectedCardIds.length} Karttan Analiz Et</span>
@@ -1122,83 +1132,83 @@ export const MindMapViewer: React.FC<MindMapViewerProps> = ({
             <button
               onClick={() => handleGenerateMindMap(false)}
               disabled={isLoading || cards.length === 0}
-              className="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl flex items-center space-x-1.5 shadow-md shadow-indigo-600/30 transition-all disabled:opacity-50"
+              className="px-3.5 py-2 bg-[#4A3E31] hover:bg-[#3A2E22] text-[#FBF7EC] font-semibold text-xs rounded-xl flex items-center space-x-1.5 shadow-sm transition-all disabled:opacity-50 cursor-pointer"
             >
               {isLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <RefreshCw className="w-4 h-4" />
               )}
-              <span>AI Tematik Bağları Yenile</span>
+              <span>Bağlantıları Yenile</span>
             </button>
           </div>
         </div>
 
         {/* View Mode Tabs & Graph Filters */}
-        <div className="flex flex-col space-y-3 pt-3 border-t border-slate-100">
+        <div className="flex flex-col space-y-3 pt-3 border-t border-[#DCD0B9]">
           
           {/* Row 1: View Mode Selector Tabs */}
-          <div className="flex flex-wrap items-center gap-1.5 p-1.5 bg-slate-100 rounded-2xl border border-slate-200 text-xs font-bold w-full">
+          <div className="flex flex-wrap items-center gap-1.5 p-1 bg-[#EBE2D0] rounded-xl border border-[#DCD0B9] text-xs font-bold w-full">
             <button
               onClick={() => setViewMode("neural")}
-              className={`px-3.5 py-2 rounded-xl flex items-center space-x-2 transition-all whitespace-nowrap ${
+              className={`px-3.5 py-2 rounded-lg flex items-center space-x-2 transition-all whitespace-nowrap cursor-pointer ${
                 viewMode === "neural"
-                  ? "bg-slate-900 text-white shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-[#FBF7EC] text-[#3A2E22] shadow-xs font-bold"
+                  : "text-[#786958] hover:text-[#3A2E22]"
               }`}
             >
-              <Brain className="w-4 h-4 text-cyan-400" />
-              <span>Nöral Ağ</span>
+              <Brain className="w-4 h-4 text-[#D85A30]" />
+              <span>Detektif Panosu</span>
             </button>
 
             <button
               onClick={() => setViewMode("ai")}
-              className={`px-3.5 py-2 rounded-xl flex items-center space-x-2 transition-all whitespace-nowrap ${
+              className={`px-3.5 py-2 rounded-lg flex items-center space-x-2 transition-all whitespace-nowrap cursor-pointer ${
                 viewMode === "ai"
-                  ? "bg-indigo-600 text-white shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-[#FBF7EC] text-[#3A2E22] shadow-xs font-bold"
+                  : "text-[#786958] hover:text-[#3A2E22]"
               }`}
             >
-              <Network className="w-4 h-4 text-indigo-200" />
-              <span>AI Hiyerarşik Şema</span>
+              <Network className="w-4 h-4 text-[#6B5A47]" />
+              <span>Hiyerarşik Şema</span>
             </button>
 
             <button
               onClick={() => setViewMode("date")}
-              className={`px-3.5 py-2 rounded-xl flex items-center space-x-2 transition-all whitespace-nowrap ${
+              className={`px-3.5 py-2 rounded-lg flex items-center space-x-2 transition-all whitespace-nowrap cursor-pointer ${
                 viewMode === "date"
-                  ? "bg-indigo-600 text-white shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-[#FBF7EC] text-[#3A2E22] shadow-xs font-bold"
+                  : "text-[#786958] hover:text-[#3A2E22]"
               }`}
             >
-              <Calendar className="w-4 h-4 text-indigo-200" />
+              <Calendar className="w-4 h-4 text-[#6B5A47]" />
               <span>Zaman Çizelgesi</span>
             </button>
 
             <button
               onClick={() => setViewMode("sketch")}
-              className={`px-3.5 py-2 rounded-xl flex items-center space-x-2 transition-all whitespace-nowrap ${
+              className={`px-3.5 py-2 rounded-lg flex items-center space-x-2 transition-all whitespace-nowrap cursor-pointer ${
                 viewMode === "sketch"
-                  ? "bg-amber-800 text-amber-50 shadow-md border border-amber-900 font-serif"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-[#FBF7EC] text-[#3A2E22] shadow-xs font-bold"
+                  : "text-[#786958] hover:text-[#3A2E22]"
               }`}
             >
-              <PenTool className="w-4 h-4 text-amber-400" />
-              <span>Defter</span>
+              <PenTool className="w-4 h-4 text-[#D85A30]" />
+              <span>Defter Notları</span>
             </button>
           </div>
 
-          {/* Row 2: Quick Filters for Graph Search & Scalability */}
+          {/* Row 2: Quick Filters for Graph Search */}
           {viewMode === "neural" && (
             <div className="flex items-center flex-wrap gap-2 w-full pt-1">
               <div className="relative flex-1 min-w-[200px]">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                <Search className="w-3.5 h-3.5 text-[#8A7B5E] absolute left-3.5 top-2.5" />
                 <input
                   type="text"
-                  placeholder="Ağda ara..."
+                  placeholder="Panoda ara..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full pl-9 pr-3 py-1.5 bg-[#FBF7EC] border border-[#DCD0B9] rounded-xl text-xs text-[#2C221E] placeholder-[#8A7B5E] focus:outline-none focus:border-[#D85A30]"
                 />
               </div>
 
@@ -1206,22 +1216,22 @@ export const MindMapViewer: React.FC<MindMapViewerProps> = ({
               <select
                 value={selectedPlatformFilter}
                 onChange={(e) => setSelectedPlatformFilter(e.target.value)}
-                className="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none"
+                className="px-3 py-1.5 bg-[#FBF7EC] border border-[#DCD0B9] rounded-xl text-xs font-semibold text-[#3A2E22] focus:outline-none cursor-pointer"
               >
                 <option value="all">Tüm Platformlar</option>
-                <option value="youtube">🔴 YouTube</option>
-                <option value="instagram">📸 Instagram</option>
-                <option value="threads">💬 Threads</option>
-                <option value="x">🐦 X (Twitter)</option>
-                <option value="poem">✍️ Şiirler</option>
-                <option value="article">📰 Makaleler</option>
+                <option value="youtube">YouTube</option>
+                <option value="instagram">Instagram</option>
+                <option value="threads">Threads</option>
+                <option value="x">X (Twitter)</option>
+                <option value="poem">Şiirler</option>
+                <option value="article">Makaleler</option>
               </select>
 
-              {/* Node Count Limit Filter for Large Sets */}
+              {/* Node Count Limit Filter */}
               <select
                 value={nodeLimitFilter}
                 onChange={(e) => setNodeLimitFilter(Number(e.target.value))}
-                className="px-2.5 py-1.5 bg-amber-50 border border-amber-200 rounded-xl text-xs font-bold text-amber-900 focus:outline-none"
+                className="px-3 py-1.5 bg-[#FBF7EC] border border-[#DCD0B9] rounded-xl text-xs font-semibold text-[#3A2E22] focus:outline-none cursor-pointer"
               >
                 <option value={0}>Tüm Düğümler ({cards.length})</option>
                 <option value={30}>En Aktif 30 Düğüm</option>
@@ -1317,10 +1327,10 @@ export const MindMapViewer: React.FC<MindMapViewerProps> = ({
               {/* Expand / Collapse All Branches */}
               <button
                 onClick={expandAllGraphNodes}
-                className="px-2.5 py-1 bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/50 text-[11px] font-bold text-indigo-300 rounded-xl transition-all cursor-pointer"
+                className="px-2.5 py-1 bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-[11px] font-bold text-indigo-200 rounded-xl transition-all cursor-pointer"
                 title="Tüm Alt Balonları Aç"
               >
-                🌿 Tümünü Aç
+                Tümünü Aç
               </button>
 
               <button
@@ -1328,24 +1338,15 @@ export const MindMapViewer: React.FC<MindMapViewerProps> = ({
                 className="px-2.5 py-1 bg-slate-800/80 hover:bg-slate-700 border border-slate-700/50 text-[11px] font-semibold text-slate-300 rounded-xl transition-all cursor-pointer"
                 title="Sadece Ana Kategorileri Göster (Minimal Görünüm)"
               >
-                📁 Minimal
+                Minimal
               </button>
 
               <button
                 onClick={resetNodePositions}
-                className="px-2.5 py-1 bg-slate-800/80 hover:bg-slate-700 border border-slate-700/50 text-[11px] font-semibold text-amber-300 rounded-xl transition-all cursor-pointer"
-                title="Balonların Sürüklenen Konumlarını Sıfırla"
+                className="px-2.5 py-1 bg-slate-800/80 hover:bg-slate-700 border border-slate-700/50 text-[11px] font-semibold text-slate-300 rounded-xl transition-all cursor-pointer"
+                title="Sürüklenen Konumları Sıfırla"
               >
-                🔓 Konumları Sıfırla
-              </button>
-
-              <div className="h-4 w-px bg-slate-700 mx-0.5" />
-
-              <button
-                onClick={() => setIsDarkMode(!isDarkMode)}
-                className="px-2.5 py-1 bg-slate-800/80 hover:bg-slate-700 text-[11px] font-semibold rounded-xl text-slate-300 transition-colors cursor-pointer"
-              >
-                {isDarkMode ? "🌌 Gece" : "☀️ Gündüz"}
+                Konumları Sıfırla
               </button>
 
               <button
@@ -1405,9 +1406,9 @@ export const MindMapViewer: React.FC<MindMapViewerProps> = ({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.3 }}
-            className="bg-slate-50/80 border border-slate-200 p-6 rounded-3xl shadow-inner overflow-x-auto"
+            className="bg-[#FBF7EC] border border-[#DCD0B9] p-6 rounded-2xl shadow-sm overflow-x-auto text-[#3A2E22]"
           >
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-4xl mx-auto space-y-1">
               {renderTreeNodeVertical(mindmapData.root)}
             </div>
           </motion.div>
@@ -1421,12 +1422,12 @@ export const MindMapViewer: React.FC<MindMapViewerProps> = ({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.3 }}
-            className="bg-slate-900/5 border border-slate-200 p-5 rounded-3xl shadow-inner space-y-3"
+            className="bg-[#FBF7EC] border border-[#DCD0B9] p-5 rounded-2xl shadow-sm space-y-3 text-[#3A2E22]"
           >
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-2">
-              <Calendar className="w-4 h-4 text-indigo-600" />
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+              <Calendar className="w-4 h-4 text-[#D85A30]" />
+              <h3 className="text-xs font-bold font-serif-fraunces text-[#3A2E22] uppercase tracking-wider">
                 Tarih Bazlı İçerik Çizelgesi
               </h3>
             </div>
@@ -1439,11 +1440,11 @@ export const MindMapViewer: React.FC<MindMapViewerProps> = ({
               return (
                 <div
                   key={group.dateKey}
-                  className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden"
+                  className="bg-[#FBF7EC] border border-[#DCD0B9] rounded-xl shadow-2xs overflow-hidden"
                 >
                   <div
                     onClick={() => toggleDateExpand(group.dateKey)}
-                    className="p-3.5 bg-slate-900 text-white cursor-pointer hover:bg-slate-800 transition-colors flex items-center justify-between"
+                    className="p-3.5 bg-[#EBE2D0] text-[#3A2E22] cursor-pointer hover:bg-[#E2D6C0] transition-colors flex items-center justify-between"
                   >
                     <div className="flex items-center space-x-3">
                       <Calendar className="w-4 h-4 text-amber-400" />
@@ -1840,21 +1841,124 @@ export const MindMapViewer: React.FC<MindMapViewerProps> = ({
         </div>
       )}
 
-      {/* AI Node Drawer if AI view selected */}
+      {/* AI Node Detailed Theme Drawer */}
       {selectedAiNode && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm">
-          <div className="bg-white border border-slate-200 rounded-3xl shadow-2xl max-w-xl w-full p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-bold text-slate-900 text-base font-serif">{decodeHTMLEntities(selectedAiNode.label)}</h3>
-              <button onClick={() => setSelectedAiNode(null)} className="text-slate-400 hover:text-slate-600 text-lg">&times;</button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden text-slate-100">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-slate-800 bg-slate-950/50 flex items-center justify-between">
+              <div className="flex items-center space-x-2.5">
+                <div
+                  className="w-3.5 h-3.5 rounded-full shrink-0 shadow-sm"
+                  style={{ backgroundColor: selectedAiNode.color || "#6366F1" }}
+                />
+                <h3 className="font-bold text-white text-base font-sans leading-snug">
+                  {decodeHTMLEntities(selectedAiNode.label)}
+                </h3>
+              </div>
+              <button
+                onClick={() => setSelectedAiNode(null)}
+                className="p-1.5 text-slate-400 hover:text-white rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
-            {selectedAiNode.summary && (
-              <p className="text-xs text-slate-600 italic bg-amber-50 p-3 rounded-2xl border border-amber-200">
-                "{decodeHTMLEntities(selectedAiNode.summary)}"
-              </p>
-            )}
-            <div className="flex justify-end pt-2">
-              <button onClick={() => setSelectedAiNode(null)} className="px-4 py-1.5 bg-slate-900 text-white rounded-xl text-xs font-semibold">Tamam</button>
+
+            <div className="p-6 overflow-y-auto space-y-5 flex-1">
+              {/* Executive Theme Summary */}
+              {selectedAiNode.summary && (
+                <div className="p-4 bg-indigo-950/30 border border-indigo-500/30 rounded-2xl space-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">Tema Özeti</span>
+                  <p className="text-xs text-slate-300 font-light leading-relaxed">
+                    "{decodeHTMLEntities(selectedAiNode.summary)}"
+                  </p>
+                </div>
+              )}
+
+              {/* Connected Cards List */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                  <span>Bu Temaya Bağlı Kartlar</span>
+                  <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-mono text-[10px]">
+                    {cards.filter((c) => selectedAiNode.cardIds?.includes(c.id)).length} Adet
+                  </span>
+                </h4>
+
+                {cards.filter((c) => selectedAiNode.cardIds?.includes(c.id)).length === 0 ? (
+                  <div className="p-6 rounded-2xl bg-slate-950/40 border border-slate-800 text-center text-xs text-slate-500">
+                    Bu tema hiyerarşisinde doğrudan eşleşen kart bulunamadı.
+                  </div>
+                ) : (
+                  cards
+                    .filter((c) => selectedAiNode.cardIds?.includes(c.id))
+                    .map((card) => (
+                      <div
+                        key={card.id}
+                        className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 hover:border-slate-700 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
+                      >
+                        <div className="space-y-1 flex-1 min-w-0">
+                          <div className="flex items-center space-x-2">
+                            <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-slate-800 text-indigo-300 border border-slate-700">
+                              {PLATFORMS[card.platform]?.name || card.platform}
+                            </span>
+                            <span className="text-[10px] text-slate-500 font-mono">
+                              {new Date(card.created_at).toLocaleDateString("tr-TR")}
+                            </span>
+                          </div>
+                          <h5 className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors truncate">
+                            {decodeHTMLEntities(card.title || "İsimsiz Kart")}
+                          </h5>
+                          {card.note && (
+                            <p className="text-xs text-slate-400 line-clamp-2 italic">
+                              "{decodeHTMLEntities(card.note)}"
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Card Actions */}
+                        <div className="flex items-center space-x-2 shrink-0 self-end sm:self-center">
+                          {onOpenReader && (
+                            <button
+                              onClick={() => {
+                                setSelectedAiNode(null);
+                                onOpenReader(card);
+                              }}
+                              className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl border border-slate-700 transition-all cursor-pointer"
+                              title="Odak Okuma Modu"
+                            >
+                              Oku
+                            </button>
+                          )}
+
+                          <button
+                            onClick={() => {
+                              setSelectedAiNode(null);
+                              if (onOpenPreview) {
+                                onOpenPreview(card);
+                              } else if (card.url) {
+                                window.open(card.url, "_blank");
+                              }
+                            }}
+                            className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-600/30 transition-all cursor-pointer flex items-center space-x-1"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>İncele</span>
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                )}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-3 bg-slate-950/60 border-t border-slate-800 flex justify-end">
+              <button
+                onClick={() => setSelectedAiNode(null)}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition-all cursor-pointer"
+              >
+                Kapat
+              </button>
             </div>
           </div>
         </div>

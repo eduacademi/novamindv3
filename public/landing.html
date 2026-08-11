@@ -66,29 +66,30 @@
         </div>
         <div class="flex items-center space-x-6 text-sm">
             <a href="#features" class="hover:text-white transition-colors">Özellikler</a>
+            <a href="#pricing" class="hover:text-white transition-colors">Fiyatlandırma</a>
             <a href="/app" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl shadow-md shadow-indigo-600/20 transition-all hover:scale-[1.02]">Panoya Git</a>
         </div>
     </nav>
 
     <!-- Hero Section -->
     <header class="relative max-w-5xl mx-auto px-6 pt-16 pb-12 text-center z-10">
-        <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold mb-6">
-            <span>Kişiye Özel Akıllı İkinci Beyin</span>
+        <span class="inline-flex items-center space-x-1.5 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold mb-6">
+            <span>✨ Kişisel Hafızanız & Zihin Haritanız</span>
         </span>
         <h1 class="text-4xl md:text-6xl font-serif-display font-bold tracking-tight text-white mb-6 leading-tight">
-            Akıllı ve Görsel İkinci Beyniniz<br>
-            <span class="bg-gradient-to-r from-indigo-400 via-amber-300 to-amber-500 bg-clip-text text-transparent">NovaMind ile Fikirlerinizi Canlandırın.</span>
+            Kaybolan Linklerinizi ve Notlarınızı<br>
+            <span class="bg-gradient-to-r from-indigo-400 via-amber-300 to-amber-500 bg-clip-text text-transparent">Düzenli Bir Akıllı Hafızaya Dönüştürün.</span>
         </h1>
-        <p class="text-lg text-slate-400 max-w-2xl mx-auto mb-10 font-light leading-relaxed">
-            Kaydettiğiniz her video, makale veya içerik anında yapay zeka ile otomatik zihin haritasına dönüşür.
+        <p class="text-base md:text-lg text-slate-300 max-w-2xl mx-auto mb-10 font-normal leading-relaxed">
+            YouTube videoları, X gönderileri, makaleler ve kendi notlarınız... Hepsini tek tıkla kaydedin; NovaMind sizin yerinize özetlesin, konularına ayırsın ve görsel bir zihin haritasına dönüştürsün.
         </p>
         <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
             <a href="/app" class="w-full sm:w-auto px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-600/30 transition-all hover:scale-[1.02] flex items-center justify-center space-x-2">
-                <span>Panoya Git</span>
+                <span>🚀 Ücretsiz Deneyin</span>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"></path></svg>
             </a>
             <a href="#features" class="w-full sm:w-auto px-8 py-4 bg-slate-800/60 hover:bg-slate-800 text-slate-300 font-semibold rounded-2xl border border-slate-700 transition-all flex items-center justify-center">
-                <span>Nasıl Çalışır?</span>
+                <span>🔍 Nasıl Çalışır?</span>
             </a>
         </div>
     </header>
@@ -99,14 +100,14 @@
         <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 mb-8 shadow-xl">
             <h3 class="text-white text-lg font-semibold mb-2 flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>Çalışan Canlı Demo: Link Analiz Et</span>
+                <span>Canlı Deneyin: Herhangi bir Link Yapıştırın</span>
             </h3>
-            <p class="text-xs text-slate-400 mb-4">Gerçek bir web sitesi veya YouTube linki girin, arka plandaki NovaMind API'sinin OpenGraph ve yapay zeka meta-verilerini nasıl çıkardığını anında izleyin.</p>
+            <p class="text-xs text-slate-300 mb-4">Okumaya vakit bulamadığınız bir makale veya izleyemediğiniz bir YouTube video linki yapıştırın, NovaMind'ın içerikten nasıl anlamlı kartlar çıkardığını hemen izleyin.</p>
             <div class="flex flex-col sm:flex-row gap-3">
                 <input id="demo-url-input" type="url" placeholder="https://example.com veya YouTube video adresi..." class="flex-1 px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-indigo-500 transition-all">
                 <button onclick="analyzeDemoLink()" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium text-sm rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-lg">
                     <svg id="loader-icon" class="w-4 h-4 hidden animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                    <span>Analiz Et (AI)</span>
+                    <span>Analiz Et</span>
                 </button>
             </div>
             <!-- Dynamic Demo Card Container -->
@@ -272,7 +273,7 @@
                             
                             <div class="pt-2">
                                 <span class="inline-block px-2 py-0.5 border border-slate-900 rounded text-[9px] font-bold text-slate-700 bg-slate-100 mb-3">Yazılım & AI</span>
-                                <img onclick="openPreviewModal('youtube')" src="https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=500&q=80" alt="Card Preview" class="w-full h-28 object-cover rounded-lg border-2 border-slate-900 mb-3 cursor-pointer hover:opacity-90 transition-opacity">
+                                <img onclick="openPreviewModal('youtube')" src="https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=800&q=80" alt="Card Preview" class="w-full h-44 md:h-52 object-cover rounded-xl border-2 border-slate-900 mb-3 cursor-pointer hover:opacity-90 transition-opacity">
                                 <h4 class="font-bold text-xs text-slate-900 leading-tight mb-2">10 Dakikada AI Destekli Web Uygulamaları Geliştirme</h4>
                                 
                                 <div class="bg-amber-100/50 border-2 border-dashed border-amber-400 rounded-xl p-2.5 my-3 text-[11px] text-slate-700 italic">
@@ -297,7 +298,7 @@
 
                             <div class="pt-2">
                                 <span class="inline-block px-2 py-0.5 border border-slate-900 rounded text-[9px] font-bold text-slate-700 bg-slate-100 mb-3">Tasarım & Trend</span>
-                                <img onclick="openPreviewModal('tiktok')" src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=500&q=80" alt="Card Preview" class="w-full h-28 object-cover rounded-lg border-2 border-slate-900 mb-3 cursor-pointer hover:opacity-90 transition-opacity">
+                                <img onclick="openPreviewModal('tiktok')" src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80" alt="Card Preview" class="w-full h-44 md:h-52 object-cover rounded-xl border-2 border-slate-900 mb-3 cursor-pointer hover:opacity-90 transition-opacity">
                                 <h4 class="font-bold text-xs text-slate-900 leading-tight mb-2">CSS Grid ile Gelişmiş Responsive Galeri Yapımı</h4>
                                 
                                 <div class="bg-amber-100/50 border-2 border-dashed border-amber-400 rounded-xl p-2.5 my-3 text-[11px] text-slate-700 italic">
@@ -322,7 +323,7 @@
 
                             <div class="pt-2">
                                 <span class="inline-block px-2 py-0.5 border border-slate-900 rounded text-[9px] font-bold text-slate-700 bg-slate-100 mb-3">Tasarım & Stil</span>
-                                <img onclick="openPreviewModal('instagram')" src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=500&q=80" alt="Card Preview" class="w-full h-28 object-cover rounded-lg border-2 border-slate-900 mb-3 cursor-pointer hover:opacity-90 transition-opacity">
+                                <img onclick="openPreviewModal('instagram')" src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=800&q=80" alt="Card Preview" class="w-full h-44 md:h-52 object-cover rounded-xl border-2 border-slate-900 mb-3 cursor-pointer hover:opacity-90 transition-opacity">
                                 <h4 class="font-bold text-xs text-slate-900 leading-tight mb-2">Japandi Stil Ev Dekorasyon Fikirleri</h4>
                                 
                                 <div class="bg-amber-100/50 border-2 border-dashed border-amber-400 rounded-xl p-2.5 my-3 text-[11px] text-slate-700 italic">
@@ -347,7 +348,7 @@
 
                             <div class="pt-2">
                                 <span class="inline-block px-2 py-0.5 border border-slate-900 rounded text-[9px] font-bold text-slate-700 bg-slate-100 mb-3">İlham & Çalışma Alanı</span>
-                                <img onclick="openPreviewModal('pinterest')" src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=500&q=80" alt="Card Preview" class="w-full h-28 object-cover rounded-lg border-2 border-slate-900 mb-3 cursor-pointer hover:opacity-90 transition-opacity">
+                                <img onclick="openPreviewModal('pinterest')" src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80" alt="Card Preview" class="w-full h-44 md:h-52 object-cover rounded-xl border-2 border-slate-900 mb-3 cursor-pointer hover:opacity-90 transition-opacity">
                                 <h4 class="font-bold text-xs text-slate-900 leading-tight mb-2">Aesthetic Desk Setup Inspiration Board</h4>
                                 
                                 <div class="bg-amber-100/50 border-2 border-dashed border-amber-400 rounded-xl p-2.5 my-3 text-[11px] text-slate-700 italic">
@@ -372,7 +373,7 @@
 
                             <div class="pt-2">
                                 <span class="inline-block px-2 py-0.5 border border-slate-900 rounded text-[9px] font-bold text-slate-700 bg-slate-100 mb-3">İş & Girişim</span>
-                                <img onclick="openPreviewModal('threads')" src="https://images.unsplash.com/photo-1542744094-3a31f103e35f?auto=format&fit=crop&w=500&q=80" alt="Card Preview" class="w-full h-28 object-cover rounded-lg border-2 border-slate-900 mb-3 cursor-pointer hover:opacity-90 transition-opacity">
+                                <img onclick="openPreviewModal('threads')" src="https://images.unsplash.com/photo-1542744094-3a31f103e35f?auto=format&fit=crop&w=800&q=80" alt="Card Preview" class="w-full h-44 md:h-52 object-cover rounded-xl border-2 border-slate-900 mb-3 cursor-pointer hover:opacity-90 transition-opacity">
                                 <h4 class="font-bold text-xs text-slate-900 leading-tight mb-2">SaaS Lansmanında İlk 1000 Müşteriyi Kazanma Rehberi</h4>
                                 
                                 <div class="bg-amber-100/50 border-2 border-dashed border-amber-400 rounded-xl p-2.5 my-3 text-[11px] text-slate-700 italic">
@@ -397,7 +398,7 @@
 
                             <div class="pt-2">
                                 <span class="inline-block px-2 py-0.5 border border-slate-900 rounded text-[9px] font-bold text-slate-700 bg-slate-100 mb-3">Akademik & AI</span>
-                                <img onclick="openPreviewModal('pdf')" src="https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=500&q=80" alt="Card Preview" class="w-full h-28 object-cover rounded-lg border-2 border-slate-900 mb-3 cursor-pointer hover:opacity-90 transition-opacity">
+                                <img onclick="openPreviewModal('pdf')" src="https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=800&q=80" alt="Card Preview" class="w-full h-44 md:h-52 object-cover rounded-xl border-2 border-slate-900 mb-3 cursor-pointer hover:opacity-90 transition-opacity">
                                 <h4 class="font-bold text-xs text-slate-900 leading-tight mb-2">RAG (Retrieval-Augmented Generation) Altyapı Makalesi</h4>
                                 
                                 <div class="bg-amber-100/50 border-2 border-dashed border-amber-400 rounded-xl p-2.5 my-3 text-[11px] text-slate-700 italic">
@@ -474,122 +475,369 @@
         </div>
     </div>
 
-    <!-- Features Section (Simplified Problem & Solution for 40+ Demographics) -->
+    <!-- Features Section (Warm, Natural Language & Large Graphics) -->
     <section id="features" class="max-w-6xl mx-auto px-6 py-20 border-t border-slate-900">
         <div class="text-center mb-16">
-            <h2 class="text-3xl font-serif-display font-semibold text-white mb-3">Bilgi Karmaşasına Son Verin</h2>
-            <p class="text-sm text-slate-400 max-w-xl mx-auto font-light">Günlük koşturmacada kaydettiğiniz ama bir daha asla bakmadığınız içerikleri sizin için işleyen akıllı bir yardımcı.</p>
+            <h2 class="text-3xl md:text-4xl font-serif-display font-semibold text-white mb-3">Kaydettiğiniz Linkler Neden Unutulup Gidiyor?</h2>
+            <p class="text-base text-slate-300 max-w-2xl mx-auto font-normal">Her gün onlarca harika içerik görüyoruz ama zamanımız yok. NovaMind bilgi karmaşasını sizin için çözüyor.</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             
-            <!-- Feature 1: Chaos vs Organization -->
-            <div class="bg-slate-900/40 p-8 rounded-2xl border border-slate-800 hover:border-slate-700/80 transition-all duration-300 flex flex-col justify-between">
+            <!-- Feature 1 -->
+            <div class="bg-slate-900/40 p-8 rounded-3xl border border-slate-800 hover:border-slate-700 transition-all duration-300 flex flex-col justify-between">
                 <div>
                     <!-- Visual Graphic 1: Disordered vs Connected -->
-                    <div class="w-full h-32 bg-slate-950/60 rounded-xl border border-slate-800/60 mb-6 flex items-center justify-center relative overflow-hidden">
+                    <div class="w-full h-44 md:h-52 bg-slate-950/80 rounded-2xl border border-slate-800/80 mb-6 flex items-center justify-center relative overflow-hidden p-2">
                         <svg class="w-full h-full" viewBox="0 0 200 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <!-- Left: Chaos -->
-                            <circle cx="25" cy="30" r="3" fill="#ef4444" class="opacity-60" />
-                            <circle cx="45" cy="70" r="2.5" fill="#ef4444" class="opacity-60" />
-                            <circle cx="60" cy="25" r="4" fill="#ef4444" class="opacity-60" />
-                            <circle cx="30" cy="60" r="3.5" fill="#ef4444" class="opacity-60" />
-                            <text x="42" y="90" fill="#94a3b8" font-size="8" text-anchor="middle">Dağınık Linkler</text>
+                            <circle cx="25" cy="30" r="4" fill="#ef4444" class="opacity-80" />
+                            <circle cx="45" cy="70" r="3.5" fill="#ef4444" class="opacity-80" />
+                            <circle cx="60" cy="25" r="5" fill="#ef4444" class="opacity-80" />
+                            <circle cx="30" cy="60" r="4" fill="#ef4444" class="opacity-80" />
+                            <text x="42" y="90" fill="#f87171" font-size="9" font-weight="bold" text-anchor="middle">Dağınık Linkler</text>
                             
                             <!-- Middle divider -->
-                            <line x1="100" y1="15" x2="100" y2="85" stroke="#1e293b" stroke-dasharray="2 2" />
-                            <path d="M96 45 L100 50 L96 55" stroke="#4f46e5" stroke-width="1.5" fill="none" />
+                            <line x1="100" y1="15" x2="100" y2="85" stroke="#334155" stroke-dasharray="3 3" />
+                            <path d="M96 45 L102 50 L96 55" stroke="#6366f1" stroke-width="2" fill="none" />
 
                             <!-- Right: Organization -->
-                            <circle cx="140" cy="50" r="4" fill="#4f46e5" />
-                            <circle cx="170" cy="30" r="3" fill="#6366f1" />
-                            <circle cx="175" cy="70" r="3" fill="#6366f1" />
-                            <line x1="140" y1="50" x2="170" y2="30" stroke="#4f46e5" stroke-width="1.2" />
-                            <line x1="140" y1="50" x2="175" y2="70" stroke="#4f46e5" stroke-width="1.2" />
-                            <text x="157" y="90" fill="#a5b4fc" font-size="8" text-anchor="middle">Düzenli Akıl Haritası</text>
+                            <circle cx="140" cy="50" r="6" fill="#6366f1" />
+                            <circle cx="170" cy="30" r="4" fill="#38bdf8" />
+                            <circle cx="175" cy="70" r="4" fill="#34d399" />
+                            <line x1="140" y1="50" x2="170" y2="30" stroke="#6366f1" stroke-width="1.8" />
+                            <line x1="140" y1="50" x2="175" y2="70" stroke="#6366f1" stroke-width="1.8" />
+                            <text x="157" y="90" fill="#a5b4fc" font-size="9" font-weight="bold" text-anchor="middle">Düzenli Akıl Haritası</text>
                         </svg>
                     </div>
                     
-                    <h3 class="text-white text-lg font-semibold mb-2">1. Unutma & Kaybolma Sorunu</h3>
-                    <p class="text-slate-400 text-xs font-light leading-relaxed mb-4">
-                        <strong class="text-red-400/90 font-medium">Sorun:</strong> Tarayıcı sekmelerinde, telefon notlarında biriken düzinelerce linki bir süre sonra bulamıyor veya tamamen unutuyorsunuz.<br class="mb-2">
-                        <strong class="text-emerald-400 font-medium">Çözüm:</strong> Kaydettiğiniz her bilgi tek bir görsel kütüphanede toplanır. Yapay zeka, konuları anlamsal olarak gruplar ve kaybolmalarını önler.
+                    <h3 class="text-white text-xl font-semibold mb-3">1. "Sonra Bakarım" Deyip Unutma Derdi</h3>
+                    <p class="text-slate-300 text-xs md:text-sm font-normal leading-relaxed mb-4">
+                        Sosyal medyada veya işte harika bir içerik görüyorsunuz, "sonra bakarım" deyip kaydediyorsunuz. Ama o sonra hiç gelmiyor, linkler kaybolup gidiyor.<br><br>
+                        <strong class="text-emerald-400 font-semibold">NovaMind İle:</strong> Tüm kayıtlarınız konularına göre ayrılmış tek bir görsel kütüphanede toplanır.
                     </p>
                 </div>
             </div>
 
-            <!-- Feature 2: Time Waste vs AI Summary -->
-            <div class="bg-slate-900/40 p-8 rounded-2xl border border-slate-800 hover:border-slate-700/80 transition-all duration-300 flex flex-col justify-between">
+            <!-- Feature 2 -->
+            <div class="bg-slate-900/40 p-8 rounded-3xl border border-slate-800 hover:border-slate-700 transition-all duration-300 flex flex-col justify-between">
                 <div>
                     <!-- Visual Graphic 2: Long Doc vs Clean Summary -->
-                    <div class="w-full h-32 bg-slate-950/60 rounded-xl border border-slate-800/60 mb-6 flex items-center justify-center relative overflow-hidden">
+                    <div class="w-full h-44 md:h-52 bg-slate-950/80 rounded-2xl border border-slate-800/80 mb-6 flex items-center justify-center relative overflow-hidden p-2">
                         <svg class="w-full h-full" viewBox="0 0 200 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <!-- Left: Long Text -->
-                            <rect x="20" y="20" width="50" height="6" rx="2" fill="#334155" />
-                            <rect x="20" y="32" width="50" height="6" rx="2" fill="#334155" />
-                            <rect x="20" y="44" width="40" height="6" rx="2" fill="#334155" />
-                            <rect x="20" y="56" width="50" height="6" rx="2" fill="#334155" />
-                            <rect x="20" y="68" width="30" height="6" rx="2" fill="#334155" />
-                            <text x="45" y="90" fill="#94a3b8" font-size="8" text-anchor="middle">Saatler Süren Okuma</text>
+                            <rect x="20" y="20" width="50" height="7" rx="2" fill="#475569" />
+                            <rect x="20" y="32" width="50" height="7" rx="2" fill="#475569" />
+                            <rect x="20" y="44" width="40" height="7" rx="2" fill="#475569" />
+                            <rect x="20" y="56" width="50" height="7" rx="2" fill="#475569" />
+                            <rect x="20" y="68" width="30" height="7" rx="2" fill="#475569" />
+                            <text x="45" y="90" fill="#94a3b8" font-size="9" text-anchor="middle">Uzun Videolar & Yazılar</text>
 
                             <!-- Middle divider -->
-                            <line x1="100" y1="15" x2="100" y2="85" stroke="#1e293b" stroke-dasharray="2 2" />
+                            <line x1="100" y1="15" x2="100" y2="85" stroke="#334155" stroke-dasharray="3 3" />
 
                             <!-- Right: Clean Summary -->
-                            <rect x="130" y="25" width="50" height="8" rx="2" fill="#fbbf24" class="opacity-20" />
-                            <path d="M136 29 L138 31 L144 27" stroke="#fbbf24" stroke-width="1.5" fill="none" />
-                            <rect x="148" y="27" width="28" height="4" rx="1" fill="#fbbf24" />
+                            <rect x="130" y="25" width="55" height="10" rx="3" fill="#fbbf24" class="opacity-20" />
+                            <path d="M136 30 L139 33 L146 27" stroke="#fbbf24" stroke-width="2" fill="none" />
+                            <rect x="150" y="28" width="28" height="4" rx="1" fill="#fbbf24" />
 
-                            <rect x="130" y="45" width="50" height="8" rx="2" fill="#fbbf24" class="opacity-20" />
-                            <path d="M136 49 L138 51 L144 47" stroke="#fbbf24" stroke-width="1.5" fill="none" />
-                            <rect x="148" y="47" width="28" height="4" rx="1" fill="#fbbf24" />
+                            <rect x="130" y="45" width="55" height="10" rx="3" fill="#fbbf24" class="opacity-20" />
+                            <path d="M136 50 L139 53 L146 47" stroke="#fbbf24" stroke-width="2" fill="none" />
+                            <rect x="150" y="48" width="28" height="4" rx="1" fill="#fbbf24" />
 
-                            <rect x="130" y="65" width="50" height="8" rx="2" fill="#fbbf24" class="opacity-20" />
-                            <path d="M136 69 L138 71 L144 67" stroke="#fbbf24" stroke-width="1.5" fill="none" />
-                            <rect x="148" y="67" width="28" height="4" rx="1" fill="#fbbf24" />
-                            <text x="155" y="90" fill="#fde047" font-size="8" text-anchor="middle">1 Dakikalık Net Özet</text>
+                            <rect x="130" y="65" width="55" height="10" rx="3" fill="#fbbf24" class="opacity-20" />
+                            <path d="M136 70 L139 73 L146 67" stroke="#fbbf24" stroke-width="2" fill="none" />
+                            <rect x="150" y="68" width="28" height="4" rx="1" fill="#fbbf24" />
+                            <text x="157" y="90" fill="#fde047" font-size="9" font-weight="bold" text-anchor="middle">1 Dakikalık Net Özet</text>
                         </svg>
                     </div>
 
-                    <h3 class="text-white text-lg font-semibold mb-2">2. Vakit Kaybı Sorunu</h3>
-                    <p class="text-slate-400 text-xs font-light leading-relaxed mb-4">
-                        <strong class="text-red-400/90 font-medium">Sorun:</strong> İlginizi çeken uzun bir makaleyi okumaya ya da 1 saatlik bir YouTube videosunu izlemeye vaktiniz yok.<br class="mb-2">
-                        <strong class="text-emerald-400 font-medium">Çözüm:</strong> Yapay zeka, içeriği saniyeler içinde tarayarak size 1 dakikada okuyabileceğiniz en net kilit çıkarımları ve özetleri çıkartır.
+                    <h3 class="text-white text-xl font-semibold mb-3">2. Okumaya veya İzlemeye Vakit Yok</h3>
+                    <p class="text-slate-300 text-xs md:text-sm font-normal leading-relaxed mb-4">
+                        1 saatlik bir YouTube videosunu izleyecek ya da sayfalarca süren bir makaleyi okuyacak zamanınız yok.<br><br>
+                        <strong class="text-emerald-400 font-semibold">NovaMind İle:</strong> Yapay zeka içeriği tarar, size 1 dakikada okuyabileceğiniz en önemli özetleri çıkartır.
                     </p>
                 </div>
             </div>
 
-            <!-- Feature 3: Disconnected Thoughts vs MindMap Synthesis -->
-            <div class="bg-slate-900/40 p-8 rounded-2xl border border-slate-800 hover:border-slate-700/80 transition-all duration-300 flex flex-col justify-between">
+            <!-- Feature 3 -->
+            <div class="bg-slate-900/40 p-8 rounded-3xl border border-slate-800 hover:border-slate-700 transition-all duration-300 flex flex-col justify-between">
                 <div>
                     <!-- Visual Graphic 3: Synthesis of Thoughts -->
-                    <div class="w-full h-32 bg-slate-950/60 rounded-xl border border-slate-800/60 mb-6 flex items-center justify-center relative overflow-hidden">
+                    <div class="w-full h-44 md:h-52 bg-slate-950/80 rounded-2xl border border-slate-800/80 mb-6 flex items-center justify-center relative overflow-hidden p-2">
                         <svg class="w-full h-full" viewBox="0 0 200 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <!-- Floating unconnected thoughts -->
-                            <rect x="20" y="20" width="35" height="12" rx="3" fill="#334155" />
-                            <text x="37.5" y="28" fill="#94a3b8" font-size="6" text-anchor="middle">Fikir A</text>
+                            <rect x="20" y="20" width="38" height="14" rx="4" fill="#334155" />
+                            <text x="39" y="29" fill="#cbd5e1" font-size="7" font-weight="bold" text-anchor="middle">Not A</text>
 
-                            <rect x="15" y="55" width="35" height="12" rx="3" fill="#334155" />
-                            <text x="32.5" y="63" fill="#94a3b8" font-size="6" text-anchor="middle">Fikir B</text>
+                            <rect x="15" y="55" width="38" height="14" rx="4" fill="#334155" />
+                            <text x="34" y="64" fill="#cbd5e1" font-size="7" font-weight="bold" text-anchor="middle">Not B</text>
 
                             <!-- Middle divider -->
-                            <line x1="100" y1="15" x2="100" y2="85" stroke="#1e293b" stroke-dasharray="2 2" />
+                            <line x1="100" y1="15" x2="100" y2="85" stroke="#334155" stroke-dasharray="3 3" />
 
                             <!-- Synthesized Output -->
-                            <circle cx="150" cy="45" r="14" fill="#10b981" class="opacity-20 animate-pulse" />
-                            <path d="M150 36 L153 43 L161 43 L155 47 L157 54 L150 50 L143 54 L145 47 L139 43 L147 43 Z" fill="#34d399" />
-                            <text x="150" y="80" fill="#34d399" font-size="8" text-anchor="middle" font-weight="bold">Yeni Sentez Fikir!</text>
+                            <circle cx="150" cy="45" r="16" fill="#10b981" class="opacity-25 animate-pulse" />
+                            <path d="M150 35 L153 43 L162 43 L155 48 L157 56 L150 51 L143 56 L145 48 L138 43 L147 43 Z" fill="#34d399" />
+                            <text x="150" y="82" fill="#34d399" font-size="9" font-weight="bold" text-anchor="middle">Yeni Fikir Sentezi!</text>
                         </svg>
                     </div>
 
-                    <h3 class="text-white text-lg font-semibold mb-2">3. Bağlantı Kuramama Sorunu</h3>
-                    <p class="text-slate-400 text-xs font-light leading-relaxed mb-4">
-                        <strong class="text-red-400/90 font-medium">Sorun:</strong> Farklı zamanlarda kaydettiğiniz değerli bilgilerin aralarındaki ortak noktaları ve saklı fırsatları göremiyorsunuz.<br class="mb-2">
-                        <strong class="text-emerald-400 font-medium">Çözüm:</strong> Zihin Haritası (Knowledge Graph) ile tüm verileriniz görsel bağlarla birbirine kenetlenir. Çapraz eşleşmeyle size özel yepyeni fikirler sentezlenir.
+                    <h3 class="text-white text-xl font-semibold mb-3">3. Notlar Arasında Bağ Kuramamak</h3>
+                    <p class="text-slate-300 text-xs md:text-sm font-normal leading-relaxed mb-4">
+                        Aylar önce kaydettiğiniz bir fikirle bugün denk geldiğiniz bir içerik arasındaki bağlantıyı fark edemiyorsunuz.<br><br>
+                        <strong class="text-emerald-400 font-semibold">NovaMind İle:</strong> Neo4j destekli Zihin Haritası verilerinizi bağlar ve yepyeni fikirler sentezler.
                     </p>
                 </div>
             </div>
 
+        </div>
+    </section>
+
+    <!-- Product Feature Showcase (Cmd+K, Reader Mode, Daily Digest) -->
+    <section class="max-w-6xl mx-auto px-6 py-20 border-t border-slate-900">
+        <div class="text-center mb-16">
+            <span class="inline-flex items-center space-x-1.5 px-3.5 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-bold uppercase tracking-widest mb-3">
+                Modern Üretkenlik Araçları
+            </span>
+            <h2 class="text-3xl md:text-4xl font-serif-display font-semibold text-white mb-4">Üretkenliğinizi Zirveye Taşıyan Özellikler</h2>
+            <p class="text-sm text-slate-400 max-w-2xl mx-auto font-light">Sadece bir link kaydedici değil; kişisel bilginizi sentezleyen tam kapsamlı zekâ sistemi.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Showcase 1: Cmd+K -->
+            <div class="bg-slate-900/60 p-6 rounded-3xl border border-slate-800 hover:border-indigo-500/40 transition-all flex flex-col justify-between">
+                <div>
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 mb-6 font-mono font-bold text-lg">
+                        ⌘K
+                    </div>
+                    <h3 class="text-white text-lg font-bold mb-2">Hızlı Komut Paleti (Cmd+K)</h3>
+                    <p class="text-slate-300 text-xs leading-relaxed mb-4">
+                        Klavye kısayoluna basın ve tüm kütüphanenizde anında arama yapın. Kartlara zıplayın, zihin haritasını açın veya tek hamlede komut çalıştırın.
+                    </p>
+                </div>
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[11px] font-mono text-slate-400">
+                    <span class="text-indigo-400">➜</span> ⌘K bas → "YouTube AI" ara → ↵ Seç
+                </div>
+            </div>
+
+            <!-- Showcase 2: Reader Mode -->
+            <div class="bg-slate-900/60 p-6 rounded-3xl border border-slate-800 hover:border-indigo-500/40 transition-all flex flex-col justify-between">
+                <div>
+                    <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-6">
+                        📖
+                    </div>
+                    <h3 class="text-white text-lg font-bold mb-2">Reader Mode (Odak Okuyucu)</h3>
+                    <p class="text-slate-300 text-xs leading-relaxed mb-4">
+                        Web sitelerindeki reklam kirliliğini unutun. Kaydedilen makaleleri temiz typografi, AI özeti ve okuma süresi takibi ile rahatça okuyun.
+                    </p>
+                </div>
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[11px] text-amber-300">
+                    <span>✨ Otomatik Reklamsız Metin + AI Özet Paneli</span>
+                </div>
+            </div>
+
+            <!-- Showcase 3: Spaced Repetition -->
+            <div class="bg-slate-900/60 p-6 rounded-3xl border border-slate-800 hover:border-indigo-500/40 transition-all flex flex-col justify-between">
+                <div>
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-6">
+                        🧠
+                    </div>
+                    <h3 class="text-white text-lg font-bold mb-2">Günlük 3 Akıllı Anımsatıcı</h3>
+                    <p class="text-slate-300 text-xs leading-relaxed mb-4">
+                        Readwise algoritması ile geçmişte kaydettiğiniz en değerli 3 notunuz her gün zihninize taze olarak tekrar hatırlatılır. Unutmaya son!
+                    </p>
+                </div>
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[11px] text-emerald-400">
+                    <span>🔄 Her Gün 3 Unutulan Fikir Kartı Taptaze</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="max-w-6xl mx-auto px-6 py-20 border-t border-slate-900">
+        <div class="text-center mb-16">
+            <span class="inline-flex items-center space-x-1.5 px-3.5 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-bold uppercase tracking-widest mb-3">
+                Sıfır Kurulum & Hazır Altyapı
+            </span>
+            <h2 class="text-3xl font-serif-display font-semibold text-white mb-3">Üretkenliğinize Uygun Planı Seçin</h2>
+            <p class="text-sm text-slate-400 max-w-xl mx-auto font-light">Karmaşık API anahtarları veya teknik kurulumlar yok! Aboneliğinizi başlatın, sunucumuz tüm AI süreçlerini sizin yerinize halletsin.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Free Plan -->
+            <div class="bg-slate-900/40 p-8 rounded-3xl border border-slate-800 flex flex-col justify-between hover:border-slate-700 transition-all">
+                <div>
+                    <h3 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Ücretsiz Başlangıç</h3>
+                    <div class="flex items-baseline gap-1 mb-4">
+                        <span class="text-4xl font-extrabold text-white">₺0</span>
+                        <span class="text-xs text-slate-500">/ sonsuza kadar</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-6">Kişisel link arşivleme ve temel zihin haritasını deneyimleyin.</p>
+                    <ul class="space-y-3 text-xs text-slate-300 mb-8">
+                        <li class="flex items-center gap-2">
+                            <span class="text-emerald-400">✓</span> 50 adet Kayıtlı Bookmark
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-emerald-400">✓</span> Her Ay 10 Ücretsiz AI Özet & Zihin Haritası
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-emerald-400">✓</span> 2D Fizik Tabanlı Mind Map
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-emerald-400">✓</span> PWA & Share Target Desteği
+                        </li>
+                    </ul>
+                </div>
+                <a href="/app" class="w-full py-3 text-center bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition-all">
+                    Ücretsiz Başla
+                </a>
+            </div>
+
+            <!-- Pro Plan (Popular) -->
+            <div class="bg-gradient-to-b from-indigo-950/40 to-slate-900/80 p-8 rounded-3xl border-2 border-indigo-500 relative flex flex-col justify-between shadow-2xl shadow-indigo-950/50 transform md:-translate-y-2">
+                <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold text-[10px] px-3.5 py-1 rounded-full uppercase tracking-wider shadow-md">
+                    ⚡ En Popüler
+                </div>
+                <div>
+                    <h3 class="text-indigo-400 text-xs font-bold uppercase tracking-wider mb-2">Pro Paket</h3>
+                    <div class="flex items-baseline gap-1 mb-4">
+                        <span class="text-4xl font-extrabold text-white">₺99</span>
+                        <span class="text-xs text-slate-400">/ ay</span>
+                    </div>
+                    <p class="text-xs text-slate-300 mb-6">Yoğun içerik tüketicileri ve aktif araştırmacılar için sıfır kurulumlu paket.</p>
+                    <ul class="space-y-3 text-xs text-slate-200 mb-8">
+                        <li class="flex items-center gap-2">
+                            <span class="text-indigo-400">✓</span> <strong>1.000 adet</strong> Kayıtlı Bookmark
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-indigo-400">✓</span> <strong>Neo4j Graph Database</strong> İzole Bağlantı
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-indigo-400">✓</span> <strong>Sunucu Dahili AI</strong> (API Anahtarı Gerekmez!)
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-indigo-400">✓</span> <strong>Cmd+K Komut Paleti & Reader Mode</strong>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-indigo-400">✓</span> Chrome Extension & PWA Desteği
+                        </li>
+                    </ul>
+                </div>
+                <a href="/app" class="w-full py-3 text-center bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-600/30 transition-all">
+                    Pro Pakete Geç
+                </a>
+            </div>
+
+            <!-- Premium Plan -->
+            <div class="bg-slate-900/40 p-8 rounded-3xl border border-slate-800 flex flex-col justify-between hover:border-purple-500/40 transition-all">
+                <div>
+                    <h3 class="text-purple-400 text-xs font-bold uppercase tracking-wider mb-2">🚀 Premium</h3>
+                    <div class="flex items-baseline gap-1 mb-4">
+                        <span class="text-4xl font-extrabold text-white">₺249</span>
+                        <span class="text-xs text-slate-500">/ ay</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-6">Profesyonel araştırmacılar ve girişimciler için sınırsız güç.</p>
+                    <ul class="space-y-3 text-xs text-slate-300 mb-8">
+                        <li class="flex items-center gap-2">
+                            <span class="text-purple-400">✓</span> <strong>Sınırsız</strong> Bookmark Kaydetme
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-purple-400">✓</span> <strong>Sınırsız</strong> AI Mind Map & Fikir Sentezi
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-purple-400">✓</span> <strong>Neo4j Graph Database</strong> Öncelikli Bağlantı
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-purple-400">✓</span> Öncelikli Destek & Erken Erişim
+                        </li>
+                    </ul>
+                </div>
+                <a href="/app" class="w-full py-3 text-center bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl transition-all">
+                    Premium'a Yükselt
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust & Guarantee Badges -->
+    <section class="max-w-4xl mx-auto px-6 pb-16 text-center">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 p-6 rounded-2xl bg-slate-900/40 border border-slate-800">
+            <div class="flex flex-col items-center">
+                <span class="text-2xl mb-1">🔒</span>
+                <span class="text-xs font-bold text-white">256-Bit SSL</span>
+                <span class="text-[10px] text-slate-400">Shopier Güvenli Ödeme</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <span class="text-2xl mb-1">⚡</span>
+                <span class="text-xs font-bold text-white">Sıfır Kurulum</span>
+                <span class="text-[10px] text-slate-400">API Anahtarı Gerekmez</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <span class="text-2xl mb-1">🛡️</span>
+                <span class="text-xs font-bold text-white">İzole Veri</span>
+                <span class="text-[10px] text-slate-400">Kişisel Hesabınıza Özel</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <span class="text-2xl mb-1">↩️</span>
+                <span class="text-xs font-bold text-white">İstediğin Zaman İptal</span>
+                <span class="text-[10px] text-slate-400">Taahhüt Yok</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Accordion Section -->
+    <section class="max-w-4xl mx-auto px-6 py-16 border-t border-slate-900">
+        <div class="text-center mb-12">
+            <h2 class="text-2xl md:text-3xl font-serif-display font-semibold text-white mb-2">Sıkça Sorulan Sorular</h2>
+            <p class="text-xs text-slate-400 font-light">Aklınıza takılabilecek tüm soruların cevapları burada.</p>
+        </div>
+
+        <div class="space-y-4">
+            <!-- FAQ 1 -->
+            <div class="bg-slate-900/60 rounded-2xl border border-slate-800 overflow-hidden">
+                <button onclick="toggleFaq(1)" class="w-full p-5 text-left font-semibold text-sm text-white flex justify-between items-center cursor-pointer">
+                    <span>Yapay zeka özellikleri için API anahtarı girmem gerekiyor mu?</span>
+                    <span id="faq-icon-1" class="text-indigo-400 text-lg">+</span>
+                </button>
+                <div id="faq-ans-1" class="hidden px-5 pb-5 text-xs text-slate-300 leading-relaxed border-t border-slate-800/60 pt-3">
+                    Hayır! Pro ve Premium paketlerimizde sunucu altyapımız tüm AI özetleme, zihin haritası ve fikir sentezi işlemlerini otomatik olarak halleder. Hiçbir teknik kurulum veya API anahtarı kopyalamanıza gerek yoktur.
+                </div>
+            </div>
+
+            <!-- FAQ 2 -->
+            <div class="bg-slate-900/60 rounded-2xl border border-slate-800 overflow-hidden">
+                <button onclick="toggleFaq(2)" class="w-full p-5 text-left font-semibold text-sm text-white flex justify-between items-center cursor-pointer">
+                    <span>Ödemelerimi nasıl ve hangi altyapı ile yapıyorum?</span>
+                    <span id="faq-icon-2" class="text-indigo-400 text-lg">+</span>
+                </button>
+                <div id="faq-ans-2" class="hidden px-5 pb-5 text-xs text-slate-300 leading-relaxed border-t border-slate-800/60 pt-3">
+                    Ödemeleriniz Türkiye'nin en güvenilir ödeme altyapılarından biri olan Shopier üzerinden 256-bit SSL korumasıyla gerçekleşir. Kredi kartı bilgileriniz sunucularımızda asla saklanmaz.
+                </div>
+            </div>
+
+            <!-- FAQ 3 -->
+            <div class="bg-slate-900/60 rounded-2xl border border-slate-800 overflow-hidden">
+                <button onclick="toggleFaq(3)" class="w-full p-5 text-left font-semibold text-sm text-white flex justify-between items-center cursor-pointer">
+                    <span>Chrome Eklentisi ve Mobil Uygulama nasıl çalışıyor?</span>
+                    <span id="faq-icon-3" class="text-indigo-400 text-lg">+</span>
+                </button>
+                <div id="faq-ans-3" class="hidden px-5 pb-5 text-xs text-slate-300 leading-relaxed border-t border-slate-800/60 pt-3">
+                    Chrome eklentimiz sayesinde internette gezinirken beğendiğiniz herhangi bir makale veya videoyu tek tıkla kütüphanenize gönderebilirsiniz. Ayrıca PWA (Progressive Web App) desteğimiz sayesinde uygulamayı telefonunuza uygulama olarak yükleyip paylaşım menüsünden doğrudan link gönderebilirsiniz.
+                </div>
+            </div>
+
+            <!-- FAQ 4 -->
+            <div class="bg-slate-900/60 rounded-2xl border border-slate-800 overflow-hidden">
+                <button onclick="toggleFaq(4)" class="w-full p-5 text-left font-semibold text-sm text-white flex justify-between items-center cursor-pointer">
+                    <span>Aboneliğimi istediğim zaman iptal edebilir miyim?</span>
+                    <span id="faq-icon-4" class="text-indigo-400 text-lg">+</span>
+                </button>
+                <div id="faq-ans-4" class="hidden px-5 pb-5 text-xs text-slate-300 leading-relaxed border-t border-slate-800/60 pt-3">
+                    Evet, taahhüt veya gizli ücretler yoktur. İstediğiniz an aboneliğinizi iptal edebilir veya plan değişikliği yapabilirsiniz.
+                </div>
+            </div>
         </div>
     </section>
 
@@ -600,6 +848,18 @@
 
     <!-- INTERACTIVE ENGINE JAVASCRIPT -->
     <script>
+        // --- FAQ TOGGLE SCRIPT ---
+        function toggleFaq(id) {
+            const ans = document.getElementById(`faq-ans-${id}`);
+            const icon = document.getElementById(`faq-icon-${id}`);
+            if (ans.classList.contains("hidden")) {
+                ans.classList.remove("hidden");
+                icon.innerText = "−";
+            } else {
+                ans.classList.add("hidden");
+                icon.innerText = "+";
+            }
+        }
         // --- 1. VIEW SWITCHING ---
         function switchView(view) {
             const neuralTab = document.getElementById("tab-btn-neural");

@@ -3,19 +3,22 @@ import {
   categorizeSingleItemWithGemini, 
   batchCategorizeWithGemini, 
   generateMindmapWithGemini, 
-  generateIdeasWithGemini 
+  generateIdeasWithGemini,
+  chatWithBookmarks 
 } from "../services/geminiService.js";
 import { aiLimiter } from "../middleware/rateLimit.js";
+import { optionalAuth } from "../middleware/auth.js";
+import { checkAiUsageLimit } from "../middleware/usageLimiter.js";
 
 const router = Router();
 
 // AI Auto Categorization & Tagging
-router.post("/gemini/categorize", aiLimiter, async (req, res, next) => {
+router.post("/gemini/categorize", optionalAuth, aiLimiter, checkAiUsageLimit("categorize"), async (req, res, next) => {
   try {
     const { items, title, description, note, url, platform } = req.body;
 
     if (!process.env.GEMINI_API_KEY && !req.headers["x-gemini-api-key"]) {
-      return res.status(500).json({ error: "GEMINI_API_KEY çevre değişkeni tanımlanmamış." });
+      return res.status(400).json({ error: "Gemini API anahtarı bulunamadı. Lütfen Ayarlar sayfasından kendi API anahtarınızı tanımlayın veya Pro pakete geçin." });
     }
 
     if (items && Array.isArray(items) && items.length > 0) {
@@ -32,7 +35,7 @@ router.post("/gemini/categorize", aiLimiter, async (req, res, next) => {
 });
 
 // AI Mind Map / Knowledge Graph Generator
-router.post("/gemini/mindmap", aiLimiter, async (req, res, next) => {
+router.post("/gemini/mindmap", optionalAuth, aiLimiter, checkAiUsageLimit("mindmap"), async (req, res, next) => {
   try {
     const { cards } = req.body;
 
@@ -41,7 +44,7 @@ router.post("/gemini/mindmap", aiLimiter, async (req, res, next) => {
     }
 
     if (!process.env.GEMINI_API_KEY && !req.headers["x-gemini-api-key"]) {
-      return res.status(500).json({ error: "GEMINI_API_KEY bulunamadı." });
+      return res.status(400).json({ error: "Gemini API anahtarı bulunamadı. Lütfen Ayarlar sayfasından kendi API anahtarınızı tanımlayın veya Pro pakete geçin." });
     }
 
     const mindmapRoot = await generateMindmapWithGemini(req, cards);
@@ -58,12 +61,12 @@ router.post("/gemini/mindmap", aiLimiter, async (req, res, next) => {
 });
 
 // AI Creative Idea Generator ("Fikir Üretici")
-router.post("/gemini/ideas", aiLimiter, async (req, res, next) => {
+router.post("/gemini/ideas", optionalAuth, aiLimiter, checkAiUsageLimit("ideas"), async (req, res, next) => {
   try {
     const { mode, cards, selectedCardIds, customPrompt } = req.body;
 
     if (!process.env.GEMINI_API_KEY && !req.headers["x-gemini-api-key"]) {
-      return res.status(500).json({ error: "GEMINI_API_KEY bulunamadı." });
+      return res.status(400).json({ error: "Gemini API anahtarı bulunamadı. Lütfen Ayarlar sayfasından kendi API anahtarınızı tanımlayın veya Pro pakete geçin." });
     }
 
     if (!cards || !Array.isArray(cards) || cards.length === 0) {
@@ -72,6 +75,31 @@ router.post("/gemini/ideas", aiLimiter, async (req, res, next) => {
 
     const ideas = await generateIdeasWithGemini(req, { mode, cards, selectedCardIds, customPrompt });
     return res.json({ ideas });
+
+  } catch (err) {
+    next(err);
+  }
+});
+
+// AI Chat with Bookmarks (RAG)
+router.post("/gemini/chat", optionalAuth, aiLimiter, async (req, res, next) => {
+  try {
+    const { query, cards } = req.body;
+
+    if (!process.env.GEMINI_API_KEY && !req.headers["x-gemini-api-key"]) {
+      return res.status(400).json({ error: "Gemini API anahtarı bulunamadı." });
+    }
+
+    if (!query || typeof query !== "string") {
+      return res.status(400).json({ error: "Soru (query) alanı gereklidir." });
+    }
+
+    if (!cards || !Array.isArray(cards) || cards.length === 0) {
+      return res.status(400).json({ error: "Sohbet edebilmek için kütüphanenizde en az 1 kart bulunmalıdır." });
+    }
+
+    const answer = await chatWithBookmarks(req, { query, cards });
+    return res.json({ answer });
 
   } catch (err) {
     next(err);

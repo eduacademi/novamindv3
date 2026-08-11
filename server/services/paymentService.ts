@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { firebaseAdminApp } from "../config/firebase.js";
+import { getFirestore } from "firebase-admin/firestore";
 import { PlanType, UserSubscription, PLAN_LIMITS } from "../types/subscription.js";
 
 // Prices in TRY (Turkish Lira)
@@ -30,7 +31,7 @@ export function createShopierCheckoutSession(params: {
   const { userId, userEmail, plan, billingPeriod } = params;
   const config = PRICING_CONFIG[plan === "premium" ? "premium" : "pro"];
   const amount = billingPeriod === "yearly" ? config.yearlyPrice : config.monthlyPrice;
-  const platformOrderId = `NM-${plan.toUpperCase()}-${userId.substring(0, 8)}-${Date.now()}`;
+  const platformOrderId = `NM_${plan.toUpperCase()}_${userId}_${Date.now()}`;
 
   const apiKey = process.env.SHOPIER_API_KEY || "";
   const apiSecret = process.env.SHOPIER_API_SECRET || "";
@@ -70,7 +71,7 @@ export function createShopierCheckoutSession(params: {
     currency: 0, // 0 = TRY
   };
 
-  const signatureData = `${payloadData.random_nr || ""}${platformOrderId}${payloadData.total_order_value}${apiSecret}`;
+  const signatureData = `${platformOrderId}${payloadData.total_order_value}${apiSecret}`;
   const signature = crypto.createHash("sha256").update(signatureData).digest("base64");
 
   return {
@@ -132,7 +133,7 @@ export async function updateUserSubscriptionInDb(params: {
   };
 
   if (firebaseAdminApp) {
-    const db = firebaseAdminApp.firestore();
+    const db = getFirestore(firebaseAdminApp);
     await db.collection("users").doc(userId).collection("subscription").doc("current").set(subscription, { merge: true });
     await db.collection("users").doc(userId).set({
       plan,
@@ -160,7 +161,7 @@ export async function getUserSubscriptionFromDb(userId: string): Promise<UserSub
   if (!firebaseAdminApp) return defaultFreeSub;
 
   try {
-    const db = firebaseAdminApp.firestore();
+    const db = getFirestore(firebaseAdminApp);
     const doc = await db.collection("users").doc(userId).collection("subscription").doc("current").get();
 
     if (doc.exists) {

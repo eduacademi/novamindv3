@@ -161,7 +161,7 @@ Kurallar:
 Düğüm yapısı: { "id": "string", "label": "string", "summary": "string", "color": "string", "cardIds": ["string"], "children": [ DüğümYapısı ] }`;
 
   const response = await getAiClient(req).models.generateContent({
-    model: "gemini-3.6-flash",
+    model: "gemini-1.5-flash",
     contents: prompt,
     config: {
       responseMimeType: "application/json"
@@ -170,6 +170,35 @@ Düğüm yapısı: { "id": "string", "label": "string", "summary": "string", "co
 
   const jsonText = response.text || "{}";
   return JSON.parse(jsonText);
+}
+
+export async function chatWithBookmarks(req: Request, options: { query: string; cards: any[] }) {
+  const { query, cards } = options;
+
+  const cardsData = cards.map((c: any) => ({
+    title: c.title || "İsimsiz",
+    note: c.note || "",
+    description: c.description || "",
+    category: c.category || "",
+    url: c.url || ""
+  }));
+
+  const prompt = `Sen NovaMind uygulamasının yapay zeka asistanısın. Kullanıcı sana kendi kişisel kütüphanesindeki (kaydettiği bağlantılar, notlar ve yer imleri) verilerle ilgili bir soru soruyor.
+Görevin, aşağıdaki kullanıcının verilerini inceleyerek onun sorusuna doğrudan, net ve arkadaşça bir dilde (Türkçe) yanıt vermek. Gerekirse ilgili içeriklerin bağlantılarını (URL) veya başlıklarını referans göster.
+
+Kullanıcının Sorusu: "${query}"
+
+Kullanıcının Verileri:
+${JSON.stringify(cardsData, null, 2)}
+
+Eğer kullanıcının sorusu mevcut verilerle tam olarak cevaplanamıyorsa, "Kütüphanenizde bu konuya dair doğrudan bir kayıt bulamadım ancak..." diyerek genel bilginle yardımcı olmaya çalış.`;
+
+  const response = await getAiClient(req).models.generateContent({
+    model: "gemini-1.5-flash",
+    contents: prompt
+  });
+
+  return response.text || "Üzgünüm, şu an cevap veremiyorum.";
 }
 
 export async function generateIdeasWithGemini(req: Request, options: { mode: string; cards: any[]; selectedCardIds?: string[]; customPrompt?: string }) {
@@ -223,7 +252,7 @@ Yanıtını aşağıdaki JSON şemasında dizi olarak ver:
 ]`;
 
   const response = await getAiClient(req).models.generateContent({
-    model: "gemini-3.6-flash",
+    model: "gemini-1.5-flash",
     contents: prompt,
     config: {
       responseMimeType: "application/json"

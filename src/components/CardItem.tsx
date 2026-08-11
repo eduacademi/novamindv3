@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ExternalLink, ShoppingBag, Star, Trash2, Edit3, Check, Tag, Youtube, Instagram, Twitter, MessageSquare, Pin, Video, FileText, Globe, AtSign, Play, Eye, Share2, Feather } from "lucide-react";
+import { ExternalLink, Star, Trash2, Edit3, Check, Youtube, Instagram, Twitter, MessageSquare, Pin, Video, FileText, Globe, AtSign, Eye, Share2, Feather } from "lucide-react";
 import { Card, Platform } from "../types";
 import { PLATFORMS } from "../lib/platformHelper";
 import { decodeHTMLEntities } from "../lib/textHelper";
@@ -24,7 +24,6 @@ export const CardItem: React.FC<CardItemProps> = ({
 }) => {
   const [isEditingNote, setIsEditingNote] = useState(false);
   const [editedNote, setEditedNote] = useState(card.note || "");
-
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [imgFailed, setImgFailed] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
@@ -33,18 +32,16 @@ export const CardItem: React.FC<CardItemProps> = ({
 
   const getPlatformIcon = (plat: Platform) => {
     switch (plat) {
-      case "youtube": return <Youtube className="w-4 h-4 text-red-600" />;
-      case "tiktok": return <Video className="w-4 h-4 text-slate-900" />;
-      case "instagram": return <Instagram className="w-4 h-4 text-pink-600" />;
-      case "threads": return <AtSign className="w-4 h-4 text-zinc-900" />;
-      case "pinterest": return <Pin className="w-4 h-4 text-rose-600" />;
-      case "x": return <Twitter className="w-4 h-4 text-sky-500" />;
-      case "reddit": return <MessageSquare className="w-4 h-4 text-orange-600" />;
-      case "article": return <FileText className="w-4 h-4 text-teal-600" />;
-      case "poem": return <Feather className="w-4 h-4 text-purple-600" />;
-      case "document": return <FileText className="w-4 h-4 text-rose-600" />;
-      case "note": return <Edit3 className="w-4 h-4 text-amber-600" />;
-      default: return <Globe className="w-4 h-4 text-slate-600" />;
+      case "youtube": return <Youtube className="w-3.5 h-3.5 text-red-700" />;
+      case "tiktok": return <Video className="w-3.5 h-3.5 text-slate-800" />;
+      case "instagram": return <Instagram className="w-3.5 h-3.5 text-rose-700" />;
+      case "threads": return <AtSign className="w-3.5 h-3.5 text-[#3A2E22]" />;
+      case "pinterest": return <Pin className="w-3.5 h-3.5 text-red-800" />;
+      case "x": return <Twitter className="w-3.5 h-3.5 text-sky-700" />;
+      case "reddit": return <MessageSquare className="w-3.5 h-3.5 text-orange-700" />;
+      case "article": return <FileText className="w-3.5 h-3.5 text-emerald-800" />;
+      case "poem": return <Feather className="w-3.5 h-3.5 text-amber-900" />;
+      default: return <Globe className="w-3.5 h-3.5 text-[#6B5A47]" />;
     }
   };
 
@@ -63,8 +60,6 @@ export const CardItem: React.FC<CardItemProps> = ({
     });
   };
 
-
-
   const formattedDate = new Date(card.created_at).toLocaleDateString("tr-TR", {
     day: "numeric",
     month: "short",
@@ -72,170 +67,94 @@ export const CardItem: React.FC<CardItemProps> = ({
   });
 
   return (
-    <div className={`group relative bg-white border transition-all duration-300 rounded-2xl overflow-hidden shadow-xs hover:shadow-md flex flex-col justify-between ${
+    <div className={`group relative bg-[#FBF7EC] border transition-all duration-300 rounded-xl p-4 flex flex-col justify-between paper-card-shadow transform hover:-translate-y-1 hover:rotate-0 transition-transform ${
       isSelected
-        ? "ring-2 ring-indigo-600 border-indigo-500"
-        : "border-slate-200/90 hover:border-slate-300"
+        ? "ring-2 ring-[#D85A30] border-[#D85A30]"
+        : "border-[#DCD0B9] hover:border-[#B8AA90]"
     }`}>
-      
-      {/* 1. Distinct Top Accent Color Strip */}
-      <div className={`h-[3.5px] w-full ${platformInfo.topBarClass || 'bg-slate-400'}`} />
 
-      {/* Selection Checkbox Overlay */}
+      {/* 3D Pushpin Pin Accent at Top Center */}
+      <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-20 w-3 h-3 rounded-full bg-radial from-[#F0997B] via-[#D85A30] to-[#993C1D] shadow-md border border-white/40" />
+
+      {/* Selection Checkbox */}
       {onToggleSelect && (
-        <div className="absolute top-3.5 left-3.5 z-20">
+        <div className="absolute top-3 left-3 z-20">
           <input
             type="checkbox"
             checked={isSelected}
             onChange={() => onToggleSelect(card.id)}
-            title="MindMap veya Fikir Üretici için seç"
-            className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shadow-sm"
+            title="Seç"
+            className="w-4 h-4 rounded border-[#C4B5A0] text-[#D85A30] focus:ring-[#D85A30] cursor-pointer shadow-2xs"
           />
         </div>
       )}
 
-      {/* Favorite Button Overlay */}
+      {/* Favorite Star Button */}
       <button
         onClick={handleToggleFavorite}
         title={card.is_favorite ? "Favorilerden Çıkar" : "Favorilere Ekle"}
-        className="absolute top-3 right-3 z-20 p-1.5 bg-slate-900/60 hover:bg-slate-900/85 text-white backdrop-blur-md rounded-full transition-transform hover:scale-105 border border-white/20 shadow-xs"
+        className="absolute top-3 right-3 z-20 p-1.5 bg-[#EBE2D0]/90 hover:bg-[#E2D6C0] text-[#3A2E22] rounded-full transition-transform hover:scale-105 border border-[#DCD0B9]"
       >
-        <Star className={`w-3.5 h-3.5 ${card.is_favorite ? "fill-amber-400 text-amber-400" : "text-slate-300"}`} />
+        <Star className={`w-3.5 h-3.5 ${card.is_favorite ? "fill-amber-500 text-amber-600" : "text-[#8A7B5E]"}`} />
       </button>
 
-      <div>
-        {/* 2. Platform Media Header / Thumbnail / Badge */}
+      {/* Card Content Top Container */}
+      <div className="pt-2 space-y-3">
+
+        {/* Thumbnail Polaroid Photo Wrapper */}
         {card.thumbnail_url && !imgFailed ? (
           <div 
             onClick={() => onOpenPreview?.(card)}
-            className="relative w-full h-36 bg-slate-950 overflow-hidden cursor-pointer group/thumb"
-            title="Detaylar ve Canlı Önizleme"
+            className="relative w-full h-40 bg-[#C9BFA8] rounded-md overflow-hidden cursor-pointer border-3 border-[#FBF7EC] shadow-sm group/thumb"
           >
             <img
               src={card.thumbnail_url}
               alt={card.title || "Görsel"}
               referrerPolicy="no-referrer"
-              className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform duration-500 opacity-90 group-hover/thumb:opacity-100"
+              className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform duration-500"
               onError={() => setImgFailed(true)}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
-            
-            {/* Minimal Hover Indicator */}
-            <div className="absolute top-3 right-10 z-10 opacity-0 group-hover/thumb:opacity-100 transition-opacity duration-200">
-              <div className="p-1 rounded-md bg-slate-900/80 text-white backdrop-blur-md border border-white/20 shadow-xs flex items-center space-x-1 px-2 text-[10px] font-medium">
-                <Eye className="w-3 h-3 text-indigo-300" />
-                <span>Önizleme</span>
-              </div>
-            </div>
-
-            {/* Platform Badge Overlay */}
-            <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-white text-xs z-10">
-              <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-slate-900/85 backdrop-blur-md border border-white/20 shadow-xs font-semibold text-[11px] text-slate-100">
-                {getPlatformIcon(card.platform)}
-                <span>{platformInfo.name}</span>
-              </div>
-              {card.author && (
-                <span className="truncate max-w-[130px] opacity-90 text-[10px] font-medium px-2 py-0.5 rounded bg-slate-900/70 backdrop-blur-sm border border-white/10">
-                  {decodeHTMLEntities(card.author)}
-                </span>
-              )}
-            </div>
-          </div>
-        ) : card.platform === "threads" ? (
-          <div 
-            onClick={() => onOpenPreview?.(card)}
-            className="relative w-full p-4 bg-zinc-950 text-white cursor-pointer overflow-hidden flex flex-col justify-between border-b border-zinc-800/80 group/threads space-y-2"
-            title="Threads Paylaşımını İncele"
-          >
-            <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center space-x-2 font-semibold text-zinc-100">
-                <span className="w-5 h-5 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[11px]">@</span>
-                <span className="truncate max-w-[140px] text-zinc-200">{decodeHTMLEntities(card.author || "Threads")}</span>
-              </div>
-              <span className="inline-flex items-center space-x-1 text-[10px] px-2.5 py-0.5 bg-zinc-800/90 text-zinc-200 rounded-full border border-zinc-700 font-semibold">
-                <AtSign className="w-3 h-3 text-zinc-300" />
-                <span>Threads</span>
-              </span>
-            </div>
-
-            <p className="text-xs text-zinc-300 italic line-clamp-2 leading-relaxed font-serif">
-              "{decodeHTMLEntities(card.description || card.title || "Threads gönderisi için açıklama eklenmedi.")}"
-            </p>
-
-            <div className="flex items-center justify-between text-[10px] text-zinc-400 pt-1">
-              <span className="text-zinc-400 font-sans">Gönderi Detayı</span>
-              <span className="flex items-center space-x-1 text-indigo-300 group-hover/threads:translate-x-0.5 transition-transform font-medium">
-                <span>İncele</span>
-                <ExternalLink className="w-3 h-3" />
-              </span>
-            </div>
-          </div>
-        ) : (
-          <div 
-            onClick={() => onOpenPreview?.(card)}
-            className="p-3 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between cursor-pointer hover:bg-slate-100/80 transition-colors"
-            title="Detaylı İncele ve Önizle"
-          >
-            {/* Social Media Platform Badge */}
-            <div className={`inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${platformInfo.badgeClass}`}>
+            <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-[#FBF7EC]/90 backdrop-blur-sm border border-[#DCD0B9] text-[10px] font-bold text-[#3A2E22] flex items-center space-x-1">
               {getPlatformIcon(card.platform)}
               <span>{platformInfo.name}</span>
             </div>
-
-            <div className="flex items-center space-x-2">
-              {card.author && (
-                <span className="text-[11px] font-medium text-slate-500 truncate max-w-[120px]">
-                  {decodeHTMLEntities(card.author)}
-                </span>
-              )}
-              <span className="text-[10px] px-2 py-0.5 bg-white text-slate-600 rounded-md border border-slate-200 font-medium shadow-2xs">
-                İncele
-              </span>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between text-xs text-[#6B5A47]">
+            <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded bg-[#EBE2D0] border border-[#DCD0B9] text-[11px] font-bold text-[#3A2E22]">
+              {getPlatformIcon(card.platform)}
+              <span>{platformInfo.name}</span>
             </div>
+            <time className="text-[11px] font-mono text-[#8A7B5E]">{formattedDate}</time>
           </div>
         )}
-      </div>
 
-      {/* 3. Card Body */}
-      <div className="p-4 space-y-3">
-        
-        {/* Category Pill & Date */}
-        <div className="flex items-center justify-between text-xs text-slate-500">
-          <span className="inline-block px-2.5 py-0.5 rounded-md text-[10px] font-semibold tracking-wider uppercase bg-slate-100/90 text-slate-700 border border-slate-200/70">
-            {card.category || "Genel"}
+        {/* Washi-Tape Category Tag & Date */}
+        <div className="flex items-center justify-between gap-2">
+          <span className="inline-block bg-[#D85A30] text-[#FBF7EC] text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-xs transform -rotate-1 shadow-2xs">
+            {card.category || "Genel Not"}
           </span>
-          <time className="text-[11px] font-mono text-slate-400">{formattedDate}</time>
+          {card.thumbnail_url && (
+            <time className="text-[11px] font-mono text-[#8A7B5E]">{formattedDate}</time>
+          )}
         </div>
 
-        {/* Title */}
+        {/* Title in Editorial Serif */}
         <h3 
           onClick={() => onOpenPreview?.(card)}
-          className="font-semibold text-slate-900 text-sm sm:text-[15px] leading-snug line-clamp-2 hover:text-indigo-600 transition-colors cursor-pointer"
+          className="font-serif-fraunces font-bold text-[#3A2E22] text-base leading-snug line-clamp-2 hover:text-[#D85A30] transition-colors cursor-pointer"
         >
-          {decodeHTMLEntities(card.title) || "İsimsiz İçerik"}
+          {decodeHTMLEntities(card.title) || "İsimsiz Not"}
         </h3>
 
-        {/* Core Personal Note Box */}
-        <div className={`relative p-3 rounded-xl text-xs text-slate-800 leading-relaxed group/note border-l-2 ${
-          card.platform === "poem"
-            ? "border-purple-500 bg-purple-50/60 border-y border-r border-purple-100 font-serif"
-            : card.platform === "document"
-            ? "border-rose-500 bg-rose-50/60 border-y border-r border-rose-100"
-            : "border-indigo-500 bg-slate-50/90 border-y border-r border-slate-200/60"
-        }`}>
-          <div className="flex items-center justify-between font-semibold text-[10px] uppercase tracking-wider mb-1 text-slate-500">
-            <span className="flex items-center space-x-1">
-              {card.platform === "poem" ? (
-                <Feather className="w-3 h-3 text-purple-600" />
-              ) : (
-                <Edit3 className="w-3 h-3 text-indigo-600" />
-              )}
-              <span>{card.platform === "poem" ? "Şiir / Edebi Eser Metni" : "Kişisel Fikir Notunuz"}</span>
-            </span>
+        {/* Handwritten Personal Note Snippet (Caveat Cursive Font) */}
+        <div className="bg-[#F5EFE0] border border-dashed border-[#C4B5A0] p-3 rounded-lg space-y-1">
+          <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-[#8A7B5E]">
+            <span>Kişisel Notunuz</span>
             {!isEditingNote && (
               <button
                 onClick={() => setIsEditingNote(true)}
-                className="p-1 hover:bg-slate-200/80 rounded text-slate-600 transition-colors"
+                className="p-1 hover:bg-[#EBE2D0] rounded text-[#6B5A47] transition-colors cursor-pointer"
                 title="Notu Düzenle"
               >
                 <Edit3 className="w-3 h-3" />
@@ -246,135 +165,97 @@ export const CardItem: React.FC<CardItemProps> = ({
           {isEditingNote ? (
             <div className="space-y-2 mt-1">
               <textarea
-                rows={card.platform === "poem" ? 5 : 3}
+                rows={3}
                 value={editedNote}
                 onChange={(e) => setEditedNote(e.target.value)}
-                className="w-full p-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-sans"
+                className="w-full p-2 bg-[#FBF7EC] border border-[#C4B5A0] rounded text-xs text-[#2C221E] focus:outline-none focus:border-[#D85A30]"
               />
-              <div className="flex justify-end space-x-1.5">
+              <div className="flex justify-end space-x-1">
                 <button
                   onClick={() => setIsEditingNote(false)}
-                  className="px-2.5 py-1 text-[11px] bg-slate-200 hover:bg-slate-300 text-slate-700 rounded font-medium"
+                  className="px-2 py-1 text-[10px] text-[#6B5A47] hover:bg-[#EBE2D0] rounded"
                 >
                   İptal
                 </button>
                 <button
                   onClick={handleSaveNote}
-                  className="px-3 py-1 text-[11px] bg-indigo-600 hover:bg-indigo-500 text-white rounded font-semibold flex items-center space-x-1 shadow-2xs"
+                  className="px-2.5 py-1 text-[10px] bg-[#D85A30] text-[#FBF7EC] font-bold rounded shadow-2xs"
                 >
-                  <Check className="w-3 h-3" />
-                  <span>Kaydet</span>
+                  Kaydet
                 </button>
               </div>
             </div>
           ) : (
-            <p className={`whitespace-pre-wrap ${card.platform === "poem" ? "italic text-purple-950 text-xs leading-relaxed" : "italic text-slate-700"}`}>
+            <p className="font-handwriting text-lg text-[#5A4A34] leading-relaxed line-clamp-3">
               "{decodeHTMLEntities(card.note) || "Henüz özel not eklenmedi."}"
             </p>
           )}
         </div>
 
-        {/* Description if present and no thumbnail */}
-        {card.description && !card.thumbnail_url && card.platform !== "threads" && (
-          <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
-            {decodeHTMLEntities(card.description)}
-          </p>
-        )}
-
-        {/* Tags */}
-        {card.tags && card.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 pt-0.5">
-            {card.tags.map((tag) => (
-              <span
-                key={tag}
-                className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200/50"
-              >
-                <Tag className="w-2.5 h-2.5 mr-1 text-slate-400" />
-                #{tag}
-              </span>
-            ))}
-          </div>
-        )}
-
       </div>
 
-      {/* 4. Footer Action Bar */}
-      <div className="px-3.5 py-2.5 bg-slate-50/90 border-t border-slate-100 flex items-center justify-between text-xs">
-        
-        {/* Source Link */}
-        <a
-          href={card.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center space-x-1 text-slate-700 font-medium hover:text-indigo-600 transition-colors"
-        >
-          {getPlatformIcon(card.platform)}
-          <span className="text-[11px]">Kaynak</span>
-          <ExternalLink className="w-3 h-3 opacity-60" />
-        </a>
-
+      {/* Card Footer Action Row */}
+      <div className="pt-3 mt-3 border-t border-dashed border-[#DCD0B9] flex items-center justify-between text-xs text-[#5A4A34]">
         <div className="flex items-center space-x-1">
-          {/* Share Button */}
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsShareOpen(true);
-            }}
+            onClick={() => onOpenPreview?.(card)}
+            className="px-2.5 py-1 bg-[#EBE2D0] hover:bg-[#E2D6C0] text-[#3A2E22] text-[11px] font-bold rounded-md flex items-center space-x-1 transition-colors cursor-pointer"
+          >
+            <Eye className="w-3.5 h-3.5 text-[#D85A30]" />
+            <span>İncele</span>
+          </button>
+          
+          <button
+            onClick={() => setIsShareOpen(true)}
+            className="p-1 hover:bg-[#EBE2D0] rounded text-[#786958] transition-colors cursor-pointer"
             title="Paylaş"
-            className="p-1.5 hover:bg-slate-200/80 text-slate-500 hover:text-indigo-600 rounded-lg transition-colors"
           >
             <Share2 className="w-3.5 h-3.5" />
           </button>
-
-
-
-          {/* Delete Card */}
-          {isConfirmingDelete ? (
-            <div className="flex items-center space-x-1 bg-rose-50 border border-rose-200 rounded-lg p-0.5 animate-in fade-in">
-              <span className="text-[10px] text-rose-700 font-semibold px-1">Silinsin mi?</span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDeleteCard(card.id);
-                }}
-                className="px-2 py-0.5 bg-rose-600 text-white font-bold text-[10px] rounded hover:bg-rose-700 transition-colors"
-              >
-                Evet
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsConfirmingDelete(false);
-                }}
-                className="px-1.5 py-0.5 bg-slate-200 text-slate-700 font-semibold text-[10px] rounded hover:bg-slate-300 transition-colors"
-              >
-                İptal
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsConfirmingDelete(true);
-              }}
-              title="Kartı Sil"
-              className="p-1.5 hover:bg-rose-100 text-slate-400 hover:text-rose-600 rounded-lg transition-colors"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          )}
         </div>
 
+        {card.url ? (
+          <a
+            href={card.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] font-bold text-[#D85A30] hover:underline flex items-center space-x-1"
+          >
+            <span>Bağlantı</span>
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        ) : isConfirmingDelete ? (
+          <div className="flex items-center space-x-1">
+            <button
+              onClick={() => onDeleteCard(card.id)}
+              className="px-2 py-0.5 bg-rose-700 text-white font-bold text-[10px] rounded"
+            >
+              Sil
+            </button>
+            <button
+              onClick={() => setIsConfirmingDelete(false)}
+              className="px-1.5 py-0.5 text-[10px] text-[#786958]"
+            >
+              İptal
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setIsConfirmingDelete(true)}
+            className="p-1 text-[#8A7B5E] hover:text-rose-700 transition-colors cursor-pointer"
+            title="Sil"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
 
       <ShareModal
+        card={card}
         isOpen={isShareOpen}
         onClose={() => setIsShareOpen(false)}
-        title={card.title || "Bookmark / Not"}
-        url={card.url}
-        note={card.note}
-        author={card.author}
       />
+
     </div>
   );
 };

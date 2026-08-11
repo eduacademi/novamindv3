@@ -1,38 +1,75 @@
 import { Router } from "express";
-import { ExtensionQueueItem } from "../types/index.js";
+import { ExtensionQueueItem, AuthenticatedRequest } from "../types/index.js";
+import { optionalAuth } from "../middleware/auth.js";
+import { firebaseAdminApp } from "../config/firebase.js";
+import { getFirestore } from "firebase-admin/firestore";
 
 const router = Router();
 
-// In-memory extension queue (will be upgraded to Redis/Firestore in future phase)
-const extensionQueue: ExtensionQueueItem[] = [];
+// Per-user in-memory queue fallback
+const userQueues = new Map<string, ExtensionQueueItem[]>();
 
-router.post("/extension/save", (req, res) => {
-  const { url, title, description, note, platform, thumbnail_url, author } = req.body;
-  if (!url) return res.status(400).json({ error: "URL is required" });
-  
-  const newItem: ExtensionQueueItem = {
-    id: `card-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-    url,
-    title: title || null,
-    description: description || null,
-    thumbnail_url: thumbnail_url || null,
-    author: author || null,
-    platform: platform || "other",
-    note: note || "",
-    tags: [],
-    category: null,
-    metadata_source: "manual",
-    created_at: Date.now()
-  };
-  
-  extensionQueue.push(newItem);
-  return res.json({ success: true, item: newItem });
+router.post("/extension/save", optionalAuth, async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const userId = req.user?.uid || req.body.userId || "dev-anonymous-user";
+    const { url, title, description, note, platform, thumbnail_url, author } = req.body;
+    if (!url) return res.status(400).json({ error: "URL is required" });
+    
+    const newItem: ExtensionQueueItem = {
+      id: `card-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      url,
+      title: title || null,
+      description: description || null,
+      thumbnail_url: thumbnail_url || null,
+      author: author || null,
+      platform: platform || "other",
+      note: note || "",
+      tags: [],
+      category: null,
+      metadata_source: "extension",
+      created_at: Date.now()
+    };
+    
+    // Save to Firestore if available
+    if (firebaseAdminApp) {
+      const db = getFirestore(firebaseAdminApp);
+      await db.collection("users").doc(userId).collection("pendingQueue").doc(newItem.id).set(newItem);
+    } else {
+      if (!userQueues.has(userId)) userQueues.set(userId, []);
+      userQueues.get(userId)!.push(newItem);
+    }
+
+    return res.json({ success: true, item: newItem });
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.get("/extension/pop", (req, res) => {
-  const items = [...extensionQueue];
-  extensionQueue.length = 0; // clear queue
-  return res.json({ items });
+router.get("/extension/pop", optionalAuth, async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const userId = req.user?.uid || req.query.userId as string || "dev-anonymous-user";
+    let items: ExtensionQueueItem[] = [];
+
+    if (firebaseAdminApp) {
+      const db = getFirestore(firebaseAdminApp);
+      const snapshot = await db.collection("users").doc(userId).collection("pendingQueue").get();
+      items = snapshot.docs.map(doc => doc.data() as ExtensionQueueItem);
+
+      // Delete popped items from Firestore
+      const batch = db.batch();
+      snapshot.docs.forEach(doc => batch.delete(doc.ref));
+      if (items.length > 0) {
+        await batch.commit();
+      }
+    } else {
+      items = [...(userQueues.get(userId) || [])];
+      userQueues.set(userId, []);
+    }
+
+    return res.json({ items });
+  } catch (err) {
+    next(err);
+  }
 });
 
 export default router;

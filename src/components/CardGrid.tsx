@@ -18,6 +18,9 @@ interface CardGridProps {
   onOpenAddModal: () => void;
   onOpenPreview?: (card: Card) => void;
   onOpenExportModal?: () => void;
+  selectedProjectId?: string | null;
+  selectedProjectName?: string | null;
+  onClearProjectFilter?: () => void;
 }
 
 export const CardGrid: React.FC<CardGridProps> = ({
@@ -34,6 +37,9 @@ export const CardGrid: React.FC<CardGridProps> = ({
   onOpenAddModal,
   onOpenPreview,
   onOpenExportModal,
+  selectedProjectId = null,
+  selectedProjectName = null,
+  onClearProjectFilter,
 }) => {
  const [searchQuery, setSearchQuery] = useState("");
  const [selectedPlatform, setSelectedPlatform] = useState<Platform | "all">("all");
@@ -55,6 +61,11 @@ export const CardGrid: React.FC<CardGridProps> = ({
  const filteredCards = useMemo(() => {
  return cards
  .filter((card) => {
+ // Project filter
+ if (selectedProjectId && !card.projectIds?.includes(selectedProjectId)) {
+ return false;
+ }
+
  // Platform filter
  if (selectedPlatform !== "all" && card.platform !== selectedPlatform) {
  return false;
@@ -99,6 +110,12 @@ export const CardGrid: React.FC<CardGridProps> = ({
 
  return (
  <div className="space-y-6">
+ {selectedProjectId && selectedProjectName && (
+ <div className="flex items-center justify-between gap-3 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-950">
+ <div><span className="font-bold">{selectedProjectName}</span> projesinin kaynaklarını görüyorsun.</div>
+ <button onClick={onClearProjectFilter} className="shrink-0 rounded-lg bg-white px-2.5 py-1.5 text-xs font-bold text-orange-800 shadow-sm hover:bg-orange-100">Tüm kaynaklar</button>
+ </div>
+ )}
  
  {/* Controls Bar: Search & Filter options */}
  <div className="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm space-y-3">

@@ -1,4 +1,4 @@
-import { Card, ShoppingItem, MindMapData, IdeaResult, ReminderItem } from "../types";
+import { Card, ShoppingItem, MindMapData, IdeaResult, ReminderItem, UserFocus, Project } from "../types";
 import { decodeHTMLEntities } from "./textHelper";
 
 const aiTechWorkspaceImg = "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&auto=format&fit=crop&q=80";
@@ -10,6 +10,44 @@ const SHOPPING_STORAGE_KEY = "idea_library_shopping_v4";
 const MINDMAP_STORAGE_KEY = "idea_library_mindmap_v4";
 const IDEAS_STORAGE_KEY = "idea_library_ideas_v4";
 const REMINDERS_STORAGE_KEY = "idea_library_reminders_v4";
+const USER_FOCUS_STORAGE_KEY = "novamind_user_focus_v1";
+const PROJECTS_STORAGE_KEY = "novamind_projects_v1";
+
+export function getUserFocus(): UserFocus | null {
+ try {
+  const value = localStorage.getItem(USER_FOCUS_STORAGE_KEY);
+  return value === "creator" || value === "researcher" ? value : null;
+ } catch (err) {
+  console.error("Error reading user focus storage", err);
+  return null;
+ }
+}
+
+export function saveUserFocus(focus: UserFocus): void {
+ try {
+  localStorage.setItem(USER_FOCUS_STORAGE_KEY, focus);
+ } catch (err) {
+  console.error("Error saving user focus storage", err);
+ }
+}
+
+export function getProjects(): Project[] {
+ try {
+  const data = localStorage.getItem(PROJECTS_STORAGE_KEY);
+  return data ? JSON.parse(data) : [];
+ } catch (err) {
+  console.error("Error reading projects storage", err);
+  return [];
+ }
+}
+
+export function saveProjects(projects: Project[]): void {
+ try {
+  localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
+ } catch (err) {
+  console.error("Error saving projects storage", err);
+ }
+}
 
 const INITIAL_CARDS: Card[] = [
  {
