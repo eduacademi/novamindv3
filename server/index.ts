@@ -45,6 +45,9 @@ app.get("/landing", (req, res) => {
 // Global Error Handler
 app.use(globalErrorHandler);
 
+// Export app for serverless (Vercel) compatibility
+export default app;
+
 // Vite middleware & Static server setup
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
@@ -66,4 +69,7 @@ async function startServer() {
   });
 }
 
-startServer();
+if (!process.env.VERCEL) {
+  startServer();
+}
+
