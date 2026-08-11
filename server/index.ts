@@ -16,7 +16,9 @@ import graphRoutes from "./routes/graph.js";
 dotenv.config();
 
 const app = express();
+app.set("trust proxy", 1);
 const PORT = Number(process.env.PORT) || 3000;
+
 
 // Security & Parsing Middlewares
 app.use(helmet({
