@@ -355,120 +355,124 @@ export async function fetchSingleMetadata(url: string): Promise<ScrapedMetadata>
   const cleanUrl = url.trim();
   const lower = cleanUrl.toLowerCase();
 
-  // Instagram scraper
-  if (lower.includes("instagram.com") || lower.includes("instagr.am")) {
-    const instaData = await fetchInstagramMeta(cleanUrl);
-    if (instaData) {
+  try {
+    // Instagram scraper
+    if (lower.includes("instagram.com") || lower.includes("instagr.am")) {
+      const instaData = await fetchInstagramMeta(cleanUrl);
+      if (instaData) {
+        return {
+          url: cleanUrl,
+          ...instaData
+        };
+      }
+    }
+
+    // YouTube oEmbed
+    if (lower.includes("youtube.com") || lower.includes("youtu.be")) {
+      try {
+        const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(cleanUrl)}&format=json`;
+        const resp = await fetch(oembedUrl);
+        if (resp.ok) {
+          const data = await resp.json();
+          return {
+            url: cleanUrl,
+            title: data.title || "YouTube Videosu",
+            description: `YouTube videosu - ${data.author_name || 'YouTube'}`,
+            thumbnail_url: data.thumbnail_url || null,
+            author: data.author_name || "YouTube",
+            platform: "youtube",
+            metadata_source: "auto"
+          };
+        }
+      } catch (e) {}
+    }
+
+    // TikTok oEmbed
+    if (lower.includes("tiktok.com")) {
+      try {
+        const oembedUrl = `https://www.tiktok.com/oembed?url=${encodeURIComponent(cleanUrl)}`;
+        const resp = await fetch(oembedUrl);
+        if (resp.ok) {
+          const data = await resp.json();
+          return {
+            url: cleanUrl,
+            title: data.title || "TikTok İçeriği",
+            description: data.author_name ? `@${data.author_name} paylaşımı` : "TikTok videosu",
+            thumbnail_url: data.thumbnail_url || null,
+            author: data.author_name ? `@${data.author_name}` : "TikTok",
+            platform: "tiktok",
+            metadata_source: "auto"
+          };
+        }
+      } catch (e) {}
+    }
+
+    // Reddit oEmbed
+    if (lower.includes("reddit.com") || lower.includes("redd.it")) {
+      try {
+        const oembedUrl = `https://www.reddit.com/oembed?url=${encodeURIComponent(cleanUrl)}`;
+        const resp = await fetch(oembedUrl);
+        if (resp.ok) {
+          const data = await resp.json();
+          return {
+            url: cleanUrl,
+            title: data.title || "Reddit Gönderisi",
+            description: data.author_name ? `Gönderen: u/${data.author_name}` : "Reddit tartışması",
+            thumbnail_url: data.thumbnail_url || null,
+            author: data.author_name ? `u/${data.author_name}` : "Reddit",
+            platform: "reddit",
+            metadata_source: "auto"
+          };
+        }
+      } catch (e) {}
+    }
+
+    // Threads scraper
+    if (lower.includes("threads.net") || lower.includes("threads.com")) {
+      const threadsData = await fetchThreadsMeta(cleanUrl);
+      if (threadsData) {
+        return {
+          url: cleanUrl,
+          ...threadsData
+        };
+      }
+    }
+
+    // X / Twitter
+    if (lower.includes("x.com") || lower.includes("twitter.com")) {
+      const userMatch = cleanUrl.match(/(?:x\.com|twitter\.com)\/([a-zA-Z0-9_]+)/i);
+      const author = userMatch ? `@${userMatch[1]}` : null;
       return {
         url: cleanUrl,
-        ...instaData
+        title: author ? `${author} X (Twitter) Paylaşımı` : "X (Twitter) Gönderisi",
+        description: "X (Twitter) gönderisi ve bağlantısı",
+        thumbnail_url: null,
+        author,
+        platform: "x",
+        metadata_source: "auto"
       };
     }
-  }
 
-  // YouTube oEmbed
-  if (lower.includes("youtube.com") || lower.includes("youtu.be")) {
-    try {
-      const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(cleanUrl)}&format=json`;
-      const resp = await fetch(oembedUrl);
-      if (resp.ok) {
-        const data = await resp.json();
-        return {
-          url: cleanUrl,
-          title: data.title || "YouTube Videosu",
-          description: `YouTube videosu - ${data.author_name || 'YouTube'}`,
-          thumbnail_url: data.thumbnail_url || null,
-          author: data.author_name || "YouTube",
-          platform: "youtube",
-          metadata_source: "auto"
-        };
-      }
-    } catch (e) {}
-  }
+    // General OpenGraph Scraper for Articles, Blogs, Pinterest, Instagram
+    const ogData = await fetchOpenGraphMeta(cleanUrl);
+    if (ogData && (ogData.title || ogData.description || ogData.thumbnail_url)) {
+      let platform = "article";
+      if (lower.includes("pinterest.com") || lower.includes("pin.it")) platform = "pinterest";
+      if (lower.includes("instagram.com")) platform = "instagram";
+      if (lower.includes("threads.net")) platform = "threads";
 
-  // TikTok oEmbed
-  if (lower.includes("tiktok.com")) {
-    try {
-      const oembedUrl = `https://www.tiktok.com/oembed?url=${encodeURIComponent(cleanUrl)}`;
-      const resp = await fetch(oembedUrl);
-      if (resp.ok) {
-        const data = await resp.json();
-        return {
-          url: cleanUrl,
-          title: data.title || "TikTok İçeriği",
-          description: data.author_name ? `@${data.author_name} paylaşımı` : "TikTok videosu",
-          thumbnail_url: data.thumbnail_url || null,
-          author: data.author_name ? `@${data.author_name}` : "TikTok",
-          platform: "tiktok",
-          metadata_source: "auto"
-        };
-      }
-    } catch (e) {}
-  }
-
-  // Reddit oEmbed
-  if (lower.includes("reddit.com") || lower.includes("redd.it")) {
-    try {
-      const oembedUrl = `https://www.reddit.com/oembed?url=${encodeURIComponent(cleanUrl)}`;
-      const resp = await fetch(oembedUrl);
-      if (resp.ok) {
-        const data = await resp.json();
-        return {
-          url: cleanUrl,
-          title: data.title || "Reddit Gönderisi",
-          description: data.author_name ? `Gönderen: u/${data.author_name}` : "Reddit tartışması",
-          thumbnail_url: data.thumbnail_url || null,
-          author: data.author_name ? `u/${data.author_name}` : "Reddit",
-          platform: "reddit",
-          metadata_source: "auto"
-        };
-      }
-    } catch (e) {}
-  }
-
-  // Threads scraper
-  if (lower.includes("threads.net") || lower.includes("threads.com")) {
-    const threadsData = await fetchThreadsMeta(cleanUrl);
-    if (threadsData) {
       return {
         url: cleanUrl,
-        ...threadsData
+        title: ogData.title || "Web Bağlantısı",
+        description: ogData.description || null,
+        thumbnail_url: ogData.thumbnail_url || null,
+        author: ogData.author || null,
+        platform,
+        metadata_source: "auto"
       };
     }
-  }
-
-  // X / Twitter
-  if (lower.includes("x.com") || lower.includes("twitter.com")) {
-    const userMatch = cleanUrl.match(/(?:x\.com|twitter\.com)\/([a-zA-Z0-9_]+)/i);
-    const author = userMatch ? `@${userMatch[1]}` : null;
-    return {
-      url: cleanUrl,
-      title: author ? `${author} X (Twitter) Paylaşımı` : "X (Twitter) Gönderisi",
-      description: "X (Twitter) gönderisi ve bağlantısı",
-      thumbnail_url: null,
-      author,
-      platform: "x",
-      metadata_source: "auto"
-    };
-  }
-
-  // General OpenGraph Scraper for Articles, Blogs, Pinterest, Instagram
-  const ogData = await fetchOpenGraphMeta(cleanUrl);
-  if (ogData && (ogData.title || ogData.description || ogData.thumbnail_url)) {
-    let platform = "article";
-    if (lower.includes("pinterest.com") || lower.includes("pin.it")) platform = "pinterest";
-    if (lower.includes("instagram.com")) platform = "instagram";
-    if (lower.includes("threads.net")) platform = "threads";
-
-    return {
-      url: cleanUrl,
-      title: ogData.title || "Web Bağlantısı",
-      description: ogData.description || null,
-      thumbnail_url: ogData.thumbnail_url || null,
-      author: ogData.author || null,
-      platform,
-      metadata_source: "auto"
-    };
+  } catch (err) {
+    console.warn("fetchSingleMetadata error fallback:", err);
   }
 
   // Fallback domain-based format
