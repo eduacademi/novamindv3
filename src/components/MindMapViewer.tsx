@@ -240,16 +240,22 @@ export const MindMapViewer: React.FC<MindMapViewerProps> = ({
         body: JSON.stringify({ cards: targetCards }),
       });
 
-      const data = await response.json();
+      const resText = await response.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(resText);
+      } catch (e) {
+        throw new Error("Lütfen Ayarlar sayfasından Gemini API anahtarınızı tanımlayın.");
+      }
       if (!response.ok || data.error) {
-        throw new Error(data.error || "Mind map üretilemedi.");
+        throw new Error(data.error || "Lütfen Ayarlar sayfasından Gemini API anahtarınızı tanımlayın.");
       }
 
       setMindmapData(data);
       saveCachedMindMap(data);
     } catch (err: any) {
       console.error("Mind map generation failed", err);
-      setErrorMsg(err.message || "AI zihin haritası üretilemedi.");
+      setErrorMsg(err.message || "Lütfen Ayarlar sayfasından Gemini API anahtarınızı tanımlayın.");
     } finally {
       setIsLoading(false);
     }
