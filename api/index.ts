@@ -1,0 +1,41 @@
+import express from "express";
+import helmet from "helmet";
+import dotenv from "dotenv";
+
+import { corsMiddleware } from "../server/middleware/cors.js";
+import { apiLimiter } from "../server/middleware/rateLimit.js";
+import { globalErrorHandler } from "../server/middleware/errorHandler.js";
+
+import metadataRoutes from "../server/routes/metadata.js";
+import geminiRoutes from "../server/routes/gemini.js";
+import extensionRoutes from "../server/routes/extension.js";
+import subscriptionRoutes from "../server/routes/subscription.js";
+import graphRoutes from "../server/routes/graph.js";
+
+dotenv.config();
+
+const app = express();
+app.set("trust proxy", 1);
+
+// Security & Parsing Middlewares
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+app.use(corsMiddleware);
+app.use(express.json({ limit: "10mb" }));
+
+// Rate Limiter for all API routes
+app.use("/api/", apiLimiter);
+
+// Route Modules
+app.use("/api", metadataRoutes);
+app.use("/api", geminiRoutes);
+app.use("/api", extensionRoutes);
+app.use("/api", subscriptionRoutes);
+app.use("/api", graphRoutes);
+
+// Global Error Handler
+app.use(globalErrorHandler);
+
+export default app;

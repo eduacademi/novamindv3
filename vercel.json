@@ -1,12 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
+  "buildCommand": "vite build",
   "outputDirectory": "dist",
-  "functions": {
-    "api/index.js": {
-      "includeFiles": "dist/server.cjs"
-    }
-  },
   "rewrites": [
     {
       "source": "/api/(.*)",
