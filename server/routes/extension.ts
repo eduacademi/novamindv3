@@ -30,11 +30,18 @@ router.post("/extension/save", optionalAuth, async (req: AuthenticatedRequest, r
       created_at: Date.now()
     };
     
-    // Save to Firestore if available
+    let savedToDb = false;
     if (firebaseAdminApp) {
-      const db = getFirestore(firebaseAdminApp);
-      await db.collection("users").doc(userId).collection("pendingQueue").doc(newItem.id).set(newItem);
-    } else {
+      try {
+        const db = getFirestore(firebaseAdminApp);
+        await db.collection("users").doc(userId).collection("pendingQueue").doc(newItem.id).set(newItem);
+        savedToDb = true;
+      } catch (e) {
+        console.warn("Firestore extension save fallback to in-memory queue:", e);
+      }
+    }
+
+    if (!savedToDb) {
       if (!userQueues.has(userId)) userQueues.set(userId, []);
       userQueues.get(userId)!.push(newItem);
     }
@@ -49,19 +56,27 @@ router.get("/extension/pop", optionalAuth, async (req: AuthenticatedRequest, res
   try {
     const userId = req.user?.uid || req.query.userId as string || "dev-anonymous-user";
     let items: ExtensionQueueItem[] = [];
+    let fetchedFromDb = false;
 
     if (firebaseAdminApp) {
-      const db = getFirestore(firebaseAdminApp);
-      const snapshot = await db.collection("users").doc(userId).collection("pendingQueue").get();
-      items = snapshot.docs.map(doc => doc.data() as ExtensionQueueItem);
+      try {
+        const db = getFirestore(firebaseAdminApp);
+        const snapshot = await db.collection("users").doc(userId).collection("pendingQueue").get();
+        items = snapshot.docs.map(doc => doc.data() as ExtensionQueueItem);
 
-      // Delete popped items from Firestore
-      const batch = db.batch();
-      snapshot.docs.forEach(doc => batch.delete(doc.ref));
-      if (items.length > 0) {
-        await batch.commit();
+        // Delete popped items from Firestore
+        const batch = db.batch();
+        snapshot.docs.forEach(doc => batch.delete(doc.ref));
+        if (items.length > 0) {
+          await batch.commit();
+        }
+        fetchedFromDb = true;
+      } catch (e) {
+        console.warn("Firestore extension pop fallback to in-memory queue:", e);
       }
-    } else {
+    }
+
+    if (!fetchedFromDb) {
       items = [...(userQueues.get(userId) || [])];
       userQueues.set(userId, []);
     }
