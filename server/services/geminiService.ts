@@ -1,7 +1,7 @@
 import { Type } from "@google/genai";
 import { Request } from "express";
-import { getAiClient } from "../config/gemini.js";
-import { inferCategoryAndTags } from "./scraperService.js";
+import { getAiClient } from "../config/gemini";
+import { inferCategoryAndTags } from "./scraperService";
 
 // Batch Gemini Categorizer helper function to analyze EACH link independently
 export async function batchCategorizeWithGemini(req: Request, rawItems: any[]) {

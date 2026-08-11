@@ -3,15 +3,15 @@ import path from "path";
 import helmet from "helmet";
 import dotenv from "dotenv";
 
-import { corsMiddleware } from "./middleware/cors.js";
-import { apiLimiter } from "./middleware/rateLimit.js";
-import { globalErrorHandler } from "./middleware/errorHandler.js";
+import { corsMiddleware } from "./middleware/cors";
+import { apiLimiter } from "./middleware/rateLimit";
+import { globalErrorHandler } from "./middleware/errorHandler";
 
-import metadataRoutes from "./routes/metadata.js";
-import geminiRoutes from "./routes/gemini.js";
-import extensionRoutes from "./routes/extension.js";
-import subscriptionRoutes from "./routes/subscription.js";
-import graphRoutes from "./routes/graph.js";
+import metadataRoutes from "./routes/metadata";
+import geminiRoutes from "./routes/gemini";
+import extensionRoutes from "./routes/extension";
+import subscriptionRoutes from "./routes/subscription";
+import graphRoutes from "./routes/graph";
 
 dotenv.config();
 

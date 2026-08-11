@@ -1,6 +1,6 @@
 import { Response, NextFunction } from "express";
-import { firebaseAuth } from "../config/firebase.js";
-import { AuthenticatedRequest } from "../types/index.js";
+import { firebaseAuth } from "../config/firebase";
+import { AuthenticatedRequest } from "../types/index";
 
 /**
  * Authentication middleware that verifies Firebase ID token from Authorization header.

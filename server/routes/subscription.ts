@@ -1,14 +1,14 @@
 import { Router } from "express";
-import { requireAuth, optionalAuth } from "../middleware/auth.js";
-import { AuthenticatedRequest } from "../types/index.js";
+import { requireAuth, optionalAuth } from "../middleware/auth";
+import { AuthenticatedRequest } from "../types/index";
 import { 
   createShopierCheckoutSession, 
   verifyShopierWebhookSignature, 
   updateUserSubscriptionInDb, 
   getUserSubscriptionFromDb, 
   PRICING_CONFIG 
-} from "../services/paymentService.js";
-import { PLAN_LIMITS, PlanType } from "../types/subscription.js";
+} from "../services/paymentService";
+import { PLAN_LIMITS, PlanType } from "../types/subscription";
 
 const router = Router();
 

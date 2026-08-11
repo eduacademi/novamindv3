@@ -5,10 +5,10 @@ import {
   generateMindmapWithGemini, 
   generateIdeasWithGemini,
   chatWithBookmarks 
-} from "../services/geminiService.js";
-import { aiLimiter } from "../middleware/rateLimit.js";
-import { optionalAuth } from "../middleware/auth.js";
-import { checkAiUsageLimit } from "../middleware/usageLimiter.js";
+} from "../services/geminiService";
+import { aiLimiter } from "../middleware/rateLimit";
+import { optionalAuth } from "../middleware/auth";
+import { checkAiUsageLimit } from "../middleware/usageLimiter";
 
 const router = Router();
 

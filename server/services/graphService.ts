@@ -1,4 +1,4 @@
-import { getNeo4jDriver } from "../config/neo4j.js";
+import { getNeo4jDriver } from "../config/neo4j";
 
 export interface GraphNodeResult {
   id: string;

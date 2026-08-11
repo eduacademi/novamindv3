@@ -2,15 +2,15 @@ import express from "express";
 import helmet from "helmet";
 import dotenv from "dotenv";
 
-import { corsMiddleware } from "../server/middleware/cors.js";
-import { apiLimiter } from "../server/middleware/rateLimit.js";
-import { globalErrorHandler } from "../server/middleware/errorHandler.js";
+import { corsMiddleware } from "../server/middleware/cors";
+import { apiLimiter } from "../server/middleware/rateLimit";
+import { globalErrorHandler } from "../server/middleware/errorHandler";
 
-import metadataRoutes from "../server/routes/metadata.js";
-import geminiRoutes from "../server/routes/gemini.js";
-import extensionRoutes from "../server/routes/extension.js";
-import subscriptionRoutes from "../server/routes/subscription.js";
-import graphRoutes from "../server/routes/graph.js";
+import metadataRoutes from "../server/routes/metadata";
+import geminiRoutes from "../server/routes/gemini";
+import extensionRoutes from "../server/routes/extension";
+import subscriptionRoutes from "../server/routes/subscription";
+import graphRoutes from "../server/routes/graph";
 
 dotenv.config();
 
