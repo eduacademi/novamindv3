@@ -253,17 +253,6 @@ export const Header: React.FC<HeaderProps> = ({
                   <span>SaaS Admin Paneli</span>
                 </button>
 
-                <button
-                  onClick={() => {
-                    setIsMoreMenuOpen(false);
-                    onOpenSettings();
-                  }}
-                  className="w-full px-4 py-2.5 text-left flex items-center space-x-2 hover:bg-[#EBE2D0] cursor-pointer"
-                >
-                  <Settings className="w-4 h-4 text-[#786958]" />
-                  <span>Ayarlar & API Key</span>
-                </button>
-
                 {currentUser && !currentUser.isAnonymous && (
                   <button
                     onClick={() => {
