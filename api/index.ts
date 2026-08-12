@@ -2,17 +2,6 @@ import express from "express";
 import helmet from "helmet";
 import dotenv from "dotenv";
 
-import { corsMiddleware } from "../server/middleware/cors";
-import { apiLimiter } from "../server/middleware/rateLimit";
-import { globalErrorHandler } from "../server/middleware/errorHandler";
-
-import metadataRoutes from "../server/routes/metadata";
-import geminiRoutes from "../server/routes/gemini";
-import extensionRoutes from "../server/routes/extension";
-import subscriptionRoutes from "../server/routes/subscription";
-import graphRoutes from "../server/routes/graph";
-import adminRoutes from "../server/routes/admin";
-
 dotenv.config();
 
 const app = express();
@@ -23,32 +12,64 @@ app.use(helmet({
   contentSecurityPolicy: false,
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
-app.use(corsMiddleware);
 app.use(express.json({ limit: "10mb" }));
 
-// Rate Limiter for all API routes
-app.use("/api/", apiLimiter);
+// Debug endpoint to verify function is alive (always available)
+app.all("/api/health", (_req, res) => {
+  res.json({ status: "ok", timestamp: Date.now(), env: process.env.NODE_ENV || "unknown" });
+});
 
-// Route Modules (Mount both with /api and at root for Vercel rewrite compatibility)
-app.use("/api", metadataRoutes);
-app.use(metadataRoutes);
+// Wrap all route imports in try-catch to identify which module crashes
+let loadError: string | null = null;
 
-app.use("/api", geminiRoutes);
-app.use(geminiRoutes);
+try {
+  // Step-by-step lazy imports to isolate crashes
+  const { corsMiddleware } = require("../server/middleware/cors");
+  const { apiLimiter } = require("../server/middleware/rateLimit");
+  const { globalErrorHandler } = require("../server/middleware/errorHandler");
 
-app.use("/api", extensionRoutes);
-app.use(extensionRoutes);
+  app.use(corsMiddleware);
+  app.use("/api/", apiLimiter);
 
-app.use("/api", subscriptionRoutes);
-app.use(subscriptionRoutes);
+  const metadataRoutes = require("../server/routes/metadata").default;
+  const geminiRoutes = require("../server/routes/gemini").default;
+  const extensionRoutes = require("../server/routes/extension").default;
+  const subscriptionRoutes = require("../server/routes/subscription").default;
+  const graphRoutes = require("../server/routes/graph").default;
+  const adminRoutes = require("../server/routes/admin").default;
 
-app.use("/api", graphRoutes);
-app.use(graphRoutes);
+  // Mount routes at both /api prefix and root for Vercel rewrite compatibility
+  app.use("/api", metadataRoutes);
+  app.use(metadataRoutes);
 
-app.use("/api", adminRoutes);
-app.use(adminRoutes);
+  app.use("/api", geminiRoutes);
+  app.use(geminiRoutes);
 
-// Global Error Handler
-app.use(globalErrorHandler);
+  app.use("/api", extensionRoutes);
+  app.use(extensionRoutes);
+
+  app.use("/api", subscriptionRoutes);
+  app.use(subscriptionRoutes);
+
+  app.use("/api", graphRoutes);
+  app.use(graphRoutes);
+
+  app.use("/api", adminRoutes);
+  app.use(adminRoutes);
+
+  // Global Error Handler
+  app.use(globalErrorHandler);
+} catch (err: any) {
+  loadError = err?.stack || err?.message || String(err);
+  console.error("❌ CRITICAL: Route loading failed:", loadError);
+
+  // Catch-all route that returns the actual error so we can debug
+  app.use((_req, res) => {
+    res.status(500).json({
+      error: "Module load failure",
+      detail: loadError,
+    });
+  });
+}
 
 export default app;
