@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { Request } from "express";
 import dotenv from "dotenv";
-import { apiKeyRouter } from "../services/apiKeyRouter.js";
+import { apiKeyRouter } from "../services/apiKeyRouter";
 
 dotenv.config();
 

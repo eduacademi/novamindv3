@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import helmet from "helmet";
 import dotenv from "dotenv";
 
@@ -21,17 +21,17 @@ app.all("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: Date.now() });
 });
 
-// Import middleware and routes with explicit .js extensions for Node.js ESM loader compatibility on Vercel
-import { corsMiddleware } from "../server/middleware/cors.js";
-import { apiLimiter } from "../server/middleware/rateLimit.js";
-import { globalErrorHandler } from "../server/middleware/errorHandler.js";
+// Import middleware and routes using standard TypeScript extensionless paths so @vercel/nft traces them
+import { corsMiddleware } from "../server/middleware/cors";
+import { apiLimiter } from "../server/middleware/rateLimit";
+import { globalErrorHandler } from "../server/middleware/errorHandler";
 
-import metadataRoutes from "../server/routes/metadata.js";
-import geminiRoutes from "../server/routes/gemini.js";
-import extensionRoutes from "../server/routes/extension.js";
-import subscriptionRoutes from "../server/routes/subscription.js";
-import graphRoutes from "../server/routes/graph.js";
-import adminRoutes from "../server/routes/admin.js";
+import metadataRoutes from "../server/routes/metadata";
+import geminiRoutes from "../server/routes/gemini";
+import extensionRoutes from "../server/routes/extension";
+import subscriptionRoutes from "../server/routes/subscription";
+import graphRoutes from "../server/routes/graph";
+import adminRoutes from "../server/routes/admin";
 
 app.use(corsMiddleware);
 app.use("/api/", apiLimiter);
