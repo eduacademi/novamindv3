@@ -12,6 +12,7 @@ import geminiRoutes from "./routes/gemini";
 import extensionRoutes from "./routes/extension";
 import subscriptionRoutes from "./routes/subscription";
 import graphRoutes from "./routes/graph";
+import adminRoutes from "./routes/admin";
 
 dotenv.config();
 
@@ -37,6 +38,7 @@ app.use("/api", geminiRoutes);
 app.use("/api", extensionRoutes);
 app.use("/api", subscriptionRoutes);
 app.use("/api", graphRoutes);
+app.use("/api", adminRoutes);
 
 // Landing page route
 app.get("/landing", (req, res) => {

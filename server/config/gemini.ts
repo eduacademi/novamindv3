@@ -1,32 +1,9 @@
 import { GoogleGenAI } from "@google/genai";
 import { Request } from "express";
 import dotenv from "dotenv";
+import { apiKeyRouter } from "../services/apiKeyRouter.js";
 
 dotenv.config();
-
-let defaultAiClient: GoogleGenAI | null = null;
-
-export function getDefaultAiClient(): GoogleGenAI | null {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return null;
-
-  if (!defaultAiClient) {
-    try {
-      defaultAiClient = new GoogleGenAI({
-        apiKey,
-        httpOptions: {
-          headers: {
-            "User-Agent": "aistudio-build",
-          },
-        },
-      });
-    } catch (err) {
-      console.warn("⚠️ Failed to initialize default GoogleGenAI client:", err);
-      defaultAiClient = null;
-    }
-  }
-  return defaultAiClient;
-}
 
 export function getAiClient(req?: Request): GoogleGenAI | null {
   const customKey = req?.headers?.["x-gemini-api-key"] as string;
@@ -42,5 +19,21 @@ export function getAiClient(req?: Request): GoogleGenAI | null {
       console.warn("⚠️ Failed to initialize GoogleGenAI with custom key:", e);
     }
   }
-  return getDefaultAiClient();
+
+  const nextKey = apiKeyRouter.getNextApiKey();
+  if (!nextKey) return null;
+
+  try {
+    return new GoogleGenAI({
+      apiKey: nextKey,
+      httpOptions: {
+        headers: { "User-Agent": "aistudio-build" },
+      },
+    });
+  } catch (err) {
+    console.warn("⚠️ Failed to initialize GoogleGenAI with pool key:", err);
+    return null;
+  }
 }
+
+export { apiKeyRouter };

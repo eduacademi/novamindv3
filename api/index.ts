@@ -11,6 +11,7 @@ import geminiRoutes from "../server/routes/gemini";
 import extensionRoutes from "../server/routes/extension";
 import subscriptionRoutes from "../server/routes/subscription";
 import graphRoutes from "../server/routes/graph";
+import adminRoutes from "../server/routes/admin";
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ app.use("/api", geminiRoutes);
 app.use("/api", extensionRoutes);
 app.use("/api", subscriptionRoutes);
 app.use("/api", graphRoutes);
+app.use("/api", adminRoutes);
 
 // Global Error Handler
 app.use(globalErrorHandler);

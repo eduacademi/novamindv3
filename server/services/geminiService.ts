@@ -1,7 +1,7 @@
 import { Type } from "@google/genai";
 import { Request } from "express";
-import { getAiClient } from "../config/gemini";
-import { inferCategoryAndTags } from "./scraperService";
+import { inferCategoryAndTags } from "./scraperService.js";
+import { apiKeyRouter } from "./apiKeyRouter.js";
 
 // Batch Gemini Categorizer helper function to analyze EACH link independently
 export async function batchCategorizeWithGemini(req: Request, rawItems: any[]) {
@@ -17,9 +17,6 @@ export async function batchCategorizeWithGemini(req: Request, rawItems: any[]) {
   });
 
   try {
-    const aiClient = getAiClient(req);
-    if (!aiClient) return items;
-
     const payload = items.map((item, idx) => ({
       id: idx,
       url: item.url,
@@ -39,51 +36,54 @@ ${JSON.stringify(payload, null, 2)}
 
 Çıktıyı 'categorized_items' dizisi olarak JSON yapısında döndür.`;
 
-    const response = await aiClient.models.generateContent({
-      model: "gemini-3.6-flash",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            categorized_items: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  id: { type: Type.INTEGER },
-                  category: { type: Type.STRING },
-                  tags: {
-                    type: Type.ARRAY,
-                    items: { type: Type.STRING }
-                  }
-                },
-                required: ["id", "category", "tags"]
+    return await apiKeyRouter.executeWithSmartRotation(req, async (aiClient) => {
+      const response = await aiClient.models.generateContent({
+        model: "gemini-3.6-flash",
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              categorized_items: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    id: { type: Type.INTEGER },
+                    category: { type: Type.STRING },
+                    tags: {
+                      type: Type.ARRAY,
+                      items: { type: Type.STRING }
+                    }
+                  },
+                  required: ["id", "category", "tags"]
+                }
               }
-            }
-          },
-          required: ["categorized_items"]
-        }
-      }
-    });
-
-    const jsonText = response.text || "{}";
-    const result = JSON.parse(jsonText);
-
-    if (result.categorized_items && Array.isArray(result.categorized_items)) {
-      result.categorized_items.forEach((catItem: any) => {
-        const target = items[catItem.id];
-        if (target) {
-          if (catItem.category) target.category = catItem.category;
-          if (Array.isArray(catItem.tags) && catItem.tags.length > 0) {
-            target.tags = catItem.tags;
+            },
+            required: ["categorized_items"]
           }
         }
       });
-    }
 
-    return items;
+      const jsonText = response.text || "{}";
+      const result = JSON.parse(jsonText);
+
+      if (result.categorized_items && Array.isArray(result.categorized_items)) {
+        result.categorized_items.forEach((catItem: any) => {
+          const target = items[catItem.id];
+          if (target) {
+            if (catItem.category) target.category = catItem.category;
+            if (Array.isArray(catItem.tags) && catItem.tags.length > 0) {
+              target.tags = catItem.tags;
+            }
+          }
+        });
+      }
+
+      return items;
+    });
+
   } catch (err) {
     console.warn("Gemini batch categorize warning (fallback heuristics used):", err);
     return items;
@@ -91,10 +91,6 @@ ${JSON.stringify(payload, null, 2)}
 }
 
 export async function categorizeSingleItemWithGemini(req: Request, itemData: any) {
-  const aiClient = getAiClient(req);
-  if (!aiClient) {
-    throw new Error("Gemini API key is not configured.");
-  }
   const { title, description, note, url, platform } = itemData;
   const prompt = `Lütfen aşağıdaki bookmark ve kişisel not verisini analiz et.
 Türkçe dilde uygun tek bir ana Kategori ve 3-5 adet alakalı Türkçe etiket (tag) öner.
@@ -112,34 +108,32 @@ Yanıtını kesinlikle aşağıdaki JSON yapısında döndür:
   "tags": ["etiket1", "etiket2", "etiket3"]
 }`;
 
-  const response = await aiClient.models.generateContent({
-    model: "gemini-3.6-flash",
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          category: { type: Type.STRING },
-          tags: {
-            type: Type.ARRAY,
-            items: { type: Type.STRING }
-          }
-        },
-        required: ["category", "tags"]
+  return await apiKeyRouter.executeWithSmartRotation(req, async (aiClient) => {
+    const response = await aiClient.models.generateContent({
+      model: "gemini-3.6-flash",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            category: { type: Type.STRING },
+            tags: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING }
+            }
+          },
+          required: ["category", "tags"]
+        }
       }
-    }
-  });
+    });
 
-  const jsonText = response.text || "{}";
-  return JSON.parse(jsonText);
+    const jsonText = response.text || "{}";
+    return JSON.parse(jsonText);
+  });
 }
 
 export async function generateMindmapWithGemini(req: Request, cards: any[]) {
-  const aiClient = getAiClient(req);
-  if (!aiClient) {
-    throw new Error("Gemini API key is not configured.");
-  }
   const cardsSummary = cards.map((c: any) => ({
     id: c.id,
     title: c.title || "İsimsiz Kart",
@@ -168,23 +162,21 @@ Kurallar:
 Çıktı JSON Şeması:
 Düğüm yapısı: { "id": "string", "label": "string", "summary": "string", "color": "string", "cardIds": ["string"], "children": [ DüğümYapısı ] }`;
 
-  const response = await aiClient.models.generateContent({
-    model: "gemini-1.5-flash",
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json"
-    }
-  });
+  return await apiKeyRouter.executeWithSmartRotation(req, async (aiClient) => {
+    const response = await aiClient.models.generateContent({
+      model: "gemini-1.5-flash",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json"
+      }
+    });
 
-  const jsonText = response.text || "{}";
-  return JSON.parse(jsonText);
+    const jsonText = response.text || "{}";
+    return JSON.parse(jsonText);
+  });
 }
 
 export async function chatWithBookmarks(req: Request, options: { query: string; cards: any[] }) {
-  const aiClient = getAiClient(req);
-  if (!aiClient) {
-    throw new Error("Gemini API key is not configured.");
-  }
   const { query, cards } = options;
 
   const cardsData = cards.map((c: any) => ({
@@ -205,19 +197,17 @@ ${JSON.stringify(cardsData, null, 2)}
 
 Eğer kullanıcının sorusu mevcut verilerle tam olarak cevaplanamıyorsa, "Kütüphanenizde bu konuya dair doğrudan bir kayıt bulamadım ancak..." diyerek genel bilginle yardımcı olmaya çalış.`;
 
-  const response = await aiClient.models.generateContent({
-    model: "gemini-1.5-flash",
-    contents: prompt
-  });
+  return await apiKeyRouter.executeWithSmartRotation(req, async (aiClient) => {
+    const response = await aiClient.models.generateContent({
+      model: "gemini-1.5-flash",
+      contents: prompt
+    });
 
-  return response.text || "Üzgünüm, şu an cevap veremiyorum.";
+    return response.text || "Üzgünüm, şu an cevap veremiyorum.";
+  });
 }
 
 export async function generateIdeasWithGemini(req: Request, options: { mode: string; cards: any[]; selectedCardIds?: string[]; customPrompt?: string }) {
-  const aiClient = getAiClient(req);
-  if (!aiClient) {
-    throw new Error("Gemini API key is not configured.");
-  }
   const { mode, cards, selectedCardIds, customPrompt } = options;
 
   let modeInstruction = "";
@@ -267,15 +257,16 @@ Yanıtını aşağıdaki JSON şemasında dizi olarak ver:
   }
 ]`;
 
-  const response = await aiClient.models.generateContent({
-    model: "gemini-1.5-flash",
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json"
-    }
+  return await apiKeyRouter.executeWithSmartRotation(req, async (aiClient) => {
+    const response = await aiClient.models.generateContent({
+      model: "gemini-1.5-flash",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json"
+      }
+    });
+
+    const jsonText = response.text || "[]";
+    return JSON.parse(jsonText);
   });
-
-  const jsonText = response.text || "[]";
-  return JSON.parse(jsonText);
 }
-

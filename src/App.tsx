@@ -18,6 +18,7 @@ import { ReaderModeModal } from "./components/ReaderModeModal";
 import { DailyDigestWidget } from "./components/DailyDigestWidget";
 import { AuthModal } from "./components/AuthModal";
 import { UserDashboardModal } from "./components/UserDashboardModal";
+import { AdminDashboardModal } from "./components/AdminDashboardModal";
 import { ChatWidget } from "./components/ChatWidget";
 import { FocusOnboarding } from "./components/FocusOnboarding";
 import { ProjectsHub } from "./components/ProjectsHub";
@@ -56,6 +57,7 @@ export default function App() {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isUserDashboardOpen, setIsUserDashboardOpen] = useState(false);
+  const [isAdminDashboardOpen, setIsAdminDashboardOpen] = useState(false);
   const [isChatWidgetOpen, setIsChatWidgetOpen] = useState(false);
   const [isPwaInfoOpen, setIsPwaInfoOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -348,6 +350,7 @@ export default function App() {
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onOpenUserDashboard={() => setIsUserDashboardOpen(true)}
+        onOpenAdminDashboard={() => setIsAdminDashboardOpen(true)}
         currentUser={currentUser}
         onLogout={handleLogout}
       />
@@ -541,6 +544,12 @@ export default function App() {
         cards={cards}
         isOpen={isChatWidgetOpen}
         onClose={() => setIsChatWidgetOpen(false)}
+      />
+
+      {/* SaaS Admin Dashboard Modal */}
+      <AdminDashboardModal
+        isOpen={isAdminDashboardOpen}
+        onClose={() => setIsAdminDashboardOpen(false)}
       />
 
       {/* Minimal Footer */}

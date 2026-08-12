@@ -17,6 +17,7 @@ interface HeaderProps {
   onOpenCommandPalette: () => void;
   onOpenAuthModal: () => void;
   onOpenUserDashboard: () => void;
+  onOpenAdminDashboard: () => void;
   currentUser: User | null;
   onLogout: () => void;
 }
@@ -33,6 +34,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenCommandPalette,
   onOpenAuthModal,
   onOpenUserDashboard,
+  onOpenAdminDashboard,
   currentUser,
   onLogout,
 }) => {
@@ -239,6 +241,17 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
 
                 <div className="my-1 border-t border-[#DCD0B9]"></div>
+
+                <button
+                  onClick={() => {
+                    setIsMoreMenuOpen(false);
+                    onOpenAdminDashboard();
+                  }}
+                  className="w-full px-4 py-2.5 text-left flex items-center space-x-2 hover:bg-[#EBE2D0] cursor-pointer font-bold text-[#D85A30]"
+                >
+                  <ShieldCheck className="w-4 h-4 text-[#D85A30]" />
+                  <span>SaaS Admin Paneli</span>
+                </button>
 
                 <button
                   onClick={() => {
