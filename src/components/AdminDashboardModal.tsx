@@ -264,7 +264,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
             </h3>
             <p className="text-xs text-[#786958] mb-6 leading-relaxed">
               API key havuzunu ve sistem parametrelerini yönetmek için Admin Gizli Şifrenizi girin.
-              *(Varsayılan şifre: <code className="font-mono text-[#D85A30] bg-[#EBE2D0] px-1.5 py-0.5 rounded">admin123</code>)*
+              *(Varsayılan şifre: <code className="font-mono text-[#D85A30] bg-[#EBE2D0] px-1.5 py-0.5 rounded font-bold">maviadam123</code>)*
             </p>
 
             <form onSubmit={handleLoginSubmit} className="w-full space-y-3">

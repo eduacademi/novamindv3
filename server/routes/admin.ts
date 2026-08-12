@@ -6,12 +6,16 @@ import { GoogleGenAI } from "@google/genai";
 
 const router = Router();
 
-// Allows default 'admin123' OR custom process.env.ADMIN_SECRET_KEY
+// Allows default 'maviadam123', legacy 'admin123', OR custom process.env.ADMIN_SECRET_KEY
 const isValidSecret = (inputSecret: string): boolean => {
   const cleanInput = (inputSecret || "").trim();
   if (!cleanInput) return false;
   const envSecret = (process.env.ADMIN_SECRET_KEY || "").trim();
-  return cleanInput === "admin123" || (!!envSecret && cleanInput === envSecret);
+  return (
+    cleanInput === "maviadam123" ||
+    cleanInput === "admin123" ||
+    (!!envSecret && cleanInput === envSecret)
+  );
 };
 
 // Admin Authentication Middleware

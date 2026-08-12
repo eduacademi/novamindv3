@@ -29,13 +29,24 @@ app.use(express.json({ limit: "10mb" }));
 // Rate Limiter for all API routes
 app.use("/api/", apiLimiter);
 
-// Route Modules
+// Route Modules (Mount both with /api and at root for Vercel rewrite compatibility)
 app.use("/api", metadataRoutes);
+app.use(metadataRoutes);
+
 app.use("/api", geminiRoutes);
+app.use(geminiRoutes);
+
 app.use("/api", extensionRoutes);
+app.use(extensionRoutes);
+
 app.use("/api", subscriptionRoutes);
+app.use(subscriptionRoutes);
+
 app.use("/api", graphRoutes);
+app.use(graphRoutes);
+
 app.use("/api", adminRoutes);
+app.use(adminRoutes);
 
 // Global Error Handler
 app.use(globalErrorHandler);

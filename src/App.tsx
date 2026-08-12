@@ -498,6 +498,7 @@ export default function App() {
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
+        onOpenAdminDashboard={() => setIsAdminDashboardOpen(true)}
       />
 
       {/* Export / Newsletter Modal */}
