@@ -69,7 +69,13 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ secret: secretToTest }),
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(text);
+      } catch (err) {
+        data = { error: "Sunucu yanıt vermedi." };
+      }
       if (res.ok && data.success) {
         setIsAuthenticated(true);
         localStorage.setItem("admin_secret_key", secretToTest);
@@ -83,8 +89,8 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
         }
         toast.error(data.error || "Geçersiz Admin Şifresi!");
       }
-    } catch (e) {
-      toast.error("Admin giriş doğrulama hatası.");
+    } catch (e: any) {
+      toast.error(e?.message || "Admin giriş doğrulama hatası.");
     } finally {
       setIsLoggingIn(false);
     }

@@ -5,12 +5,19 @@ import { getNeo4jDriver } from "../config/neo4j.js";
 import { GoogleGenAI } from "@google/genai";
 
 const router = Router();
-const getAdminSecret = () => (process.env.ADMIN_SECRET_KEY || "admin123").trim();
 
-// Simple Admin Authentication Middleware
+// Allows default 'admin123' OR custom process.env.ADMIN_SECRET_KEY
+const isValidSecret = (inputSecret: string): boolean => {
+  const cleanInput = (inputSecret || "").trim();
+  if (!cleanInput) return false;
+  const envSecret = (process.env.ADMIN_SECRET_KEY || "").trim();
+  return cleanInput === "admin123" || (!!envSecret && cleanInput === envSecret);
+};
+
+// Admin Authentication Middleware
 function checkAdminAuth(req: Request, res: Response, next: NextFunction) {
   const secret = ((req.headers["x-admin-secret"] as string) || req.body?.adminSecret || req.query?.adminSecret || "").trim();
-  if (!secret || secret !== getAdminSecret()) {
+  if (!isValidSecret(secret)) {
     return res.status(401).json({ error: "Yetkisiz erişim. Geçersiz Admin Şifresi." });
   }
   next();
@@ -19,7 +26,7 @@ function checkAdminAuth(req: Request, res: Response, next: NextFunction) {
 // POST /api/admin/login - Verify Admin Secret
 router.post("/admin/login", (req, res) => {
   const secret = (req.body?.secret || "").trim();
-  if (secret && secret === getAdminSecret()) {
+  if (isValidSecret(secret)) {
     return res.json({ success: true, message: "Admin girişi başarılı." });
   }
   return res.status(401).json({ error: "Geçersiz Admin Şifresi." });
