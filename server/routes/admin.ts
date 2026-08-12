@@ -27,8 +27,8 @@ function checkAdminAuth(req: Request, res: Response, next: NextFunction) {
   next();
 }
 
-// POST /api/admin/login - Verify Admin Secret
-router.post("/admin/login", (req, res) => {
+// POST /api/admin/login or /admin/login or /login - Verify Admin Secret
+router.post(["/admin/login", "/login"], (req, res) => {
   const secret = (req.body?.secret || "").trim();
   if (isValidSecret(secret)) {
     return res.json({ success: true, message: "Admin girişi başarılı." });
@@ -37,7 +37,7 @@ router.post("/admin/login", (req, res) => {
 });
 
 // GET /api/admin/metrics - Overall SaaS Stats & Key Router Metrics
-router.get("/admin/metrics", checkAdminAuth, async (req, res) => {
+router.get(["/admin/metrics", "/metrics"], checkAdminAuth, async (req, res) => {
   const routerMetrics = apiKeyRouter.getMetrics();
   const neo4jDriver = getNeo4jDriver();
 
@@ -56,14 +56,14 @@ router.get("/admin/metrics", checkAdminAuth, async (req, res) => {
 });
 
 // GET /api/admin/keys - Fetch all API keys in pool
-router.get("/admin/keys", checkAdminAuth, (req, res) => {
+router.get(["/admin/keys", "/keys"], checkAdminAuth, (req, res) => {
   const keys = apiKeyRouter.getKeysPool();
   const metrics = apiKeyRouter.getMetrics();
   return res.json({ keys, metrics });
 });
 
 // POST /api/admin/keys - Add a new API Key into pool
-router.post("/admin/keys", checkAdminAuth, (req, res) => {
+router.post(["/admin/keys", "/keys"], checkAdminAuth, (req, res) => {
   const { key, label, isFree } = req.body;
   if (!key || typeof key !== "string" || key.trim().length < 10) {
     return res.status(400).json({ error: "Geçerli bir API Key zorunludur." });
@@ -79,7 +79,7 @@ router.post("/admin/keys", checkAdminAuth, (req, res) => {
 });
 
 // DELETE /api/admin/keys/:id - Remove key from pool
-router.delete("/admin/keys/:id", checkAdminAuth, (req, res) => {
+router.delete(["/admin/keys/:id", "/keys/:id"], checkAdminAuth, (req, res) => {
   const { id } = req.params;
   const removed = apiKeyRouter.removeKey(id);
   if (removed) {
@@ -89,7 +89,7 @@ router.delete("/admin/keys/:id", checkAdminAuth, (req, res) => {
 });
 
 // POST /api/admin/keys/:id/toggle - Enable or disable key
-router.post("/admin/keys/:id/toggle", checkAdminAuth, (req, res) => {
+router.post(["/admin/keys/:id/toggle", "/keys/:id/toggle"], checkAdminAuth, (req, res) => {
   const { id } = req.params;
   const toggled = apiKeyRouter.toggleKeyActive(id);
   if (toggled) {
@@ -99,7 +99,7 @@ router.post("/admin/keys/:id/toggle", checkAdminAuth, (req, res) => {
 });
 
 // POST /api/admin/keys/test - Test an API key with lightweight call
-router.post("/admin/keys/test", checkAdminAuth, async (req, res) => {
+router.post(["/admin/keys/test", "/keys/test"], checkAdminAuth, async (req, res) => {
   const { key } = req.body;
   const targetKey = key || apiKeyRouter.getNextApiKey();
 
