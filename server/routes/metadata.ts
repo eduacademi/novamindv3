@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { fetchSingleMetadata, inferCategoryAndTags } from "../services/scraperService";
-import { batchCategorizeWithGemini } from "../services/geminiService";
-import { metadataLimiter } from "../middleware/rateLimit";
+import { fetchSingleMetadata, inferCategoryAndTags } from "../services/scraperService.js";
+import { batchCategorizeWithGemini } from "../services/geminiService.js";
+import { metadataLimiter } from "../middleware/rateLimit.js";
 
 const router = Router();
 

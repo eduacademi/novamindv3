@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { ExtensionQueueItem, AuthenticatedRequest } from "../types/index";
-import { optionalAuth } from "../middleware/auth";
-import { firebaseAdminApp } from "../config/firebase";
+import { ExtensionQueueItem, AuthenticatedRequest } from "../types/index.js";
+import { optionalAuth } from "../middleware/auth.js";
+import { firebaseAdminApp } from "../config/firebase.js";
 import { getFirestore } from "firebase-admin/firestore";
 
 const router = Router();

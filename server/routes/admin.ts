@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from "express";
-import { apiKeyRouter } from "../services/apiKeyRouter";
-import { PRICING_CONFIG } from "../services/paymentService";
-import { getNeo4jDriver } from "../config/neo4j";
+import { apiKeyRouter } from "../services/apiKeyRouter.js";
+import { PRICING_CONFIG } from "../services/paymentService.js";
+import { getNeo4jDriver } from "../config/neo4j.js";
 import { GoogleGenAI } from "@google/genai";
 
 const router = Router();

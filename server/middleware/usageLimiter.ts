@@ -1,7 +1,7 @@
 import { Response, NextFunction } from "express";
-import { AuthenticatedRequest } from "../types/index";
-import { getUserSubscriptionFromDb } from "../services/paymentService";
-import { PLAN_LIMITS } from "../types/subscription";
+import { AuthenticatedRequest } from "../types/index.js";
+import { getUserSubscriptionFromDb } from "../services/paymentService.js";
+import { PLAN_LIMITS } from "../types/subscription.js";
 
 /**
  * Middleware that checks if user has remaining quota for AI operations based on their plan

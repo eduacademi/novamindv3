@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { requireAuth, optionalAuth } from "../middleware/auth";
-import { syncCardToGraph, syncAllCardsToGraph, deleteCardFromGraph, getUserGraph } from "../services/graphService";
-import { AuthenticatedRequest } from "../types/index";
+import { requireAuth, optionalAuth } from "../middleware/auth.js";
+import { syncCardToGraph, syncAllCardsToGraph, deleteCardFromGraph, getUserGraph } from "../services/graphService.js";
+import { AuthenticatedRequest } from "../types/index.js";
 
 const router = Router();
 

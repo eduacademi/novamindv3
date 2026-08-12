@@ -1,7 +1,7 @@
 import crypto from "crypto";
-import { firebaseAdminApp } from "../config/firebase";
+import { firebaseAdminApp } from "../config/firebase.js";
 import { getFirestore } from "firebase-admin/firestore";
-import { PlanType, UserSubscription, PLAN_LIMITS } from "../types/subscription";
+import { PlanType, UserSubscription, PLAN_LIMITS } from "../types/subscription.js";
 
 // Prices in TRY (Turkish Lira)
 export const PRICING_CONFIG = {

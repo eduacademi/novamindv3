@@ -1,4 +1,4 @@
-import { ScrapedMetadata, InferredCategory } from "../types/index";
+import { ScrapedMetadata, InferredCategory } from "../types/index.js";
 
 // Helper for scraping OpenGraph meta tags from standard websites
 export async function fetchOpenGraphMeta(url: string) {
