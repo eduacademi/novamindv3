@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build:api": "esbuild api/index.ts --bundle --platform=node --target=node20 --format=esm --outfile=api/index.js --external:express --external:cors --external:helmet --external:dotenv --external:firebase-admin --external:neo4j-driver --external:@google/genai",
+    "build:api": "esbuild api/index.ts --bundle --platform=node --target=node20 --format=esm --outfile=api/index.js --external:fs --external:path --external:crypto --external:http --external:https --external:os --external:url --external:stream --external:util --external:zlib --external:buffer --external:events",
     "build": "npm run build:api && vite build && tsc --noEmit",
     "start": "node dist/server.cjs",
     "preview": "vite preview",
