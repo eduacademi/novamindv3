@@ -64,19 +64,19 @@ class ApiKeyRouterService {
   }
 
   private saveKeysToDisk() {
+    if (process.env.VERCEL) return; // Skip writing to read-only disk on Vercel lambda
     try {
       const dir = path.dirname(CONFIG_FILE_PATH);
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
-      // Save sanitized keys (masking middle characters for security)
       const dataToSave = {
         updatedAt: Date.now(),
         keys: this.keys,
       };
       fs.writeFileSync(CONFIG_FILE_PATH, JSON.stringify(dataToSave, null, 2), "utf-8");
     } catch (e) {
-      console.warn("⚠️ Could not save admin keys to disk:", e);
+      // Ignore read-only filesystem errors gracefully
     }
   }
 

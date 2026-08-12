@@ -1,7 +1,7 @@
+import "dotenv/config";
 import express from "express";
 import path from "path";
 import helmet from "helmet";
-import dotenv from "dotenv";
 
 import { corsMiddleware } from "./middleware/cors";
 import { apiLimiter } from "./middleware/rateLimit";
@@ -13,8 +13,6 @@ import extensionRoutes from "./routes/extension";
 import subscriptionRoutes from "./routes/subscription";
 import graphRoutes from "./routes/graph";
 import adminRoutes from "./routes/admin";
-
-dotenv.config();
 
 const app = express();
 app.set("trust proxy", 1);
