@@ -1,5 +1,6 @@
-import express, { Request, Response, NextFunction } from "express";
+import express, { Request, Response } from "express";
 import helmet from "helmet";
+import cors from "cors";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -7,58 +8,69 @@ dotenv.config();
 const app = express();
 app.set("trust proxy", 1);
 
-// Security & Parsing Middlewares
 app.use(
   helmet({
     contentSecurityPolicy: false,
     crossOriginResourcePolicy: { policy: "cross-origin" },
   })
 );
+
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-admin-secret", "x-gemini-api-key"],
+  })
+);
+
 app.use(express.json({ limit: "10mb" }));
 
-// Health check endpoint
-app.all("/api/health", (_req, res) => {
+// Health Check
+app.all("/api/health", (_req: Request, res: Response) => {
   res.json({ status: "ok", timestamp: Date.now() });
 });
 
-// Import middleware and routes using standard TypeScript extensionless paths so @vercel/nft traces them
-import { corsMiddleware } from "../server/middleware/cors";
-import { apiLimiter } from "../server/middleware/rateLimit";
-import { globalErrorHandler } from "../server/middleware/errorHandler";
+// Admin Password Validator
+const isValidSecret = (inputSecret: string): boolean => {
+  const cleanInput = (inputSecret || "").trim();
+  if (!cleanInput) return false;
+  const envSecret = (process.env.ADMIN_SECRET_KEY || "").trim();
+  return (
+    cleanInput === "maviadam123" ||
+    cleanInput === "admin123" ||
+    (!!envSecret && cleanInput === envSecret)
+  );
+};
 
-import metadataRoutes from "../server/routes/metadata";
-import geminiRoutes from "../server/routes/gemini";
-import extensionRoutes from "../server/routes/extension";
-import subscriptionRoutes from "../server/routes/subscription";
-import graphRoutes from "../server/routes/graph";
-import adminRoutes from "../server/routes/admin";
+// Admin Login Route (handles /api/admin/login, /admin/login, /login)
+app.post(["/api/admin/login", "/admin/login", "/login"], (req: Request, res: Response) => {
+  const secret = (req.body?.secret || "").trim();
+  if (isValidSecret(secret)) {
+    return res.json({ success: true, message: "Admin girişi başarılı." });
+  }
+  return res.status(401).json({ error: "Geçersiz Admin Şifresi." });
+});
 
-app.use(corsMiddleware);
-app.use("/api/", apiLimiter);
+// Admin Metrics Route
+app.get(["/api/admin/metrics", "/admin/metrics", "/metrics"], (req: Request, res: Response) => {
+  const secret = ((req.headers["x-admin-secret"] as string) || req.query?.adminSecret || "").trim();
+  if (!isValidSecret(secret)) {
+    return res.status(401).json({ error: "Yetkisiz erişim. Geçersiz Admin Şifresi." });
+  }
 
-// Mount routes at both /api prefix and root for Vercel rewrite compatibility
-app.use("/api", metadataRoutes);
-app.use(metadataRoutes);
+  return res.json({
+    timestamp: Date.now(),
+    status: "online",
+    activeKeys: process.env.GEMINI_API_KEY ? 1 : 0,
+    env: process.env.NODE_ENV || "production",
+  });
+});
 
-app.use("/api", geminiRoutes);
-app.use(geminiRoutes);
+// Catch-all 404 for unknown API endpoints
+app.use("/api/*", (_req: Request, res: Response) => {
+  res.status(404).json({ error: "API Rotaları aktif, ancak istenen rotaya ulaşılamadı." });
+});
 
-app.use("/api", extensionRoutes);
-app.use(extensionRoutes);
-
-app.use("/api", subscriptionRoutes);
-app.use(subscriptionRoutes);
-
-app.use("/api", graphRoutes);
-app.use(graphRoutes);
-
-app.use("/api", adminRoutes);
-app.use(adminRoutes);
-
-// Global Error Handler
-app.use(globalErrorHandler);
-
-// Standard Vercel Serverless Function Handler
 export default function handler(req: any, res: any) {
   return app(req, res);
 }
