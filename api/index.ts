@@ -58,4 +58,6 @@ app.use(adminRoutes);
 // Global Error Handler
 app.use(globalErrorHandler);
 
+// Export for both CommonJS (Vercel) and ESM compatibility
+module.exports = app;
 export default app;
