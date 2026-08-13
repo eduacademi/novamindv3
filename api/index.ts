@@ -58,6 +58,7 @@ app.use(adminRoutes);
 // Global Error Handler
 app.use(globalErrorHandler);
 
-// Export for both CommonJS (Vercel) and ESM compatibility
-module.exports = app;
-export default app;
+// Standard Vercel Serverless Function Handler
+export default function handler(req: any, res: any) {
+  return app(req, res);
+}
