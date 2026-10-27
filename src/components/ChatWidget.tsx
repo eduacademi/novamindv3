@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MessageSquare, X, Send, Loader2, Bot, User } from "lucide-react";
 import { Card } from "../types";
+import { apiFetch } from "../lib/api";
 
 interface ChatWidgetProps {
   cards: Card[];
@@ -35,7 +36,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ cards, isOpen, onClose }
     setIsLoading(true);
 
     try {
-      const res = await fetch("/api/gemini/chat", {
+      const res = await apiFetch("/api/gemini/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: userText, cards })

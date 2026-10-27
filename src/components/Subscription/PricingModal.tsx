@@ -103,7 +103,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({
                 </li>
                 <li className="flex items-center space-x-2">
                   <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>Kendi Gemini Key'iniz (BYOK)</span>
+                  <span>Ayda 3 AI zihin haritası & fikir üretimi</span>
                 </li>
                 <li className="flex items-center space-x-2">
                   <Check className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -161,11 +161,11 @@ export const PricingModal: React.FC<PricingModalProps> = ({
                 </li>
                 <li className="flex items-center space-x-2">
                   <Check className="w-4 h-4 text-indigo-400 shrink-0" />
-                  <span>Chrome Extension Tam Desteği</span>
+                  <span>Günde 100 AI asistan sorusu</span>
                 </li>
                 <li className="flex items-center space-x-2">
                   <Check className="w-4 h-4 text-indigo-400 shrink-0" />
-                  <span>Haftalık Keşif Özeti E-postası</span>
+                  <span>Haftalık Keşif Özeti</span>
                 </li>
               </ul>
             </div>
@@ -215,7 +215,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({
                 </li>
                 <li className="flex items-center space-x-2">
                   <Check className="w-4 h-4 text-purple-400 shrink-0" />
-                  <span>Öncelikli Yüksek Hızlı Gemini Flash</span>
+                  <span><strong>Sınırsız</strong> AI asistan & etiketleme</span>
                 </li>
                 <li className="flex items-center space-x-2">
                   <Check className="w-4 h-4 text-purple-400 shrink-0" />
@@ -239,7 +239,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({
         <div className="mt-8 pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-4">
           <div className="flex items-center space-x-2">
             <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
-            <span>256-Bit SSL ile Güvenli Ödeme (Shopier / İyzico Güvencesiyle)</span>
+            <span>Shopier güvencesiyle güvenli ödeme · İstediğin zaman iptal</span>
           </div>
           <span className="text-slate-500">İstediğiniz zaman tek tıkla iptal edebilirsiniz.</span>
         </div>

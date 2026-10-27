@@ -2,60 +2,43 @@ import { Response, NextFunction } from "express";
 import { firebaseAuth } from "../config/firebase";
 import { AuthenticatedRequest } from "../types/index";
 
-/**
- * Authentication middleware that verifies Firebase ID token from Authorization header.
- */
-export async function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-  const authHeader = req.headers.authorization;
+const isProd = process.env.NODE_ENV === "production";
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    if (process.env.NODE_ENV !== "production" && !process.env.STRICT_AUTH) {
-      req.user = { uid: "dev-anonymous-user" };
-      return next();
-    }
-    return res.status(401).json({ error: "Erişim reddedildi: Geçerli yetkilendirme jetonu (Bearer token) bulunamadı." });
-  }
-
-  const token = authHeader.split("Bearer ")[1];
-
-  try {
-    if (firebaseAuth) {
-      const decodedToken = await firebaseAuth.verifyIdToken(token);
-      req.user = {
-        uid: decodedToken.uid,
-        email: decodedToken.email
-      };
-      return next();
-    } else {
-      req.user = { uid: "authenticated-user" };
-      return next();
-    }
-  } catch (error: any) {
-    console.error("Auth Token Verification Error:", error.message);
-    return res.status(401).json({ error: "Geçersiz veya süresi dolmuş oturum jetonu." });
-  }
+function getBearer(req: AuthenticatedRequest): string | null {
+  const header = req.headers.authorization;
+  if (!header || !header.startsWith("Bearer ")) return null;
+  return header.slice(7).trim() || null;
 }
 
 /**
- * Optional authentication middleware: populates req.user if token is present.
+ * Verifies the Firebase ID token. In local development (no STRICT_AUTH) a missing
+ * token falls back to a single dev user so the app works without Firebase setup.
  */
-export async function optionalAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-  const authHeader = req.headers.authorization;
+export async function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  const token = getBearer(req);
 
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    const token = authHeader.split("Bearer ")[1];
-    try {
-      if (firebaseAuth) {
-        const decodedToken = await firebaseAuth.verifyIdToken(token);
-        req.user = {
-          uid: decodedToken.uid,
-          email: decodedToken.email
-        };
-      }
-    } catch (e) {
-      // Ignore token error for optional auth
+  if (!token) {
+    if (!isProd && !process.env.STRICT_AUTH) {
+      req.user = { uid: "dev-anonymous-user", isAnonymous: true };
+      return next();
     }
+    return res.status(401).json({ error: "Oturum bulunamadı. Lütfen sayfayı yenileyin veya giriş yapın." });
   }
 
-  next();
+  if (!firebaseAuth) {
+    return res.status(503).json({ error: "Kimlik doğrulama servisi yapılandırılmamış." });
+  }
+
+  try {
+    const decoded = await firebaseAuth.verifyIdToken(token);
+    req.user = {
+      uid: decoded.uid,
+      email: decoded.email,
+      isAnonymous: decoded.firebase?.sign_in_provider === "anonymous",
+    };
+    return next();
+  } catch (error: any) {
+    console.warn("Auth token verification failed:", error?.code || error?.message);
+    return res.status(401).json({ error: "Geçersiz veya süresi dolmuş oturum. Lütfen sayfayı yenileyin." });
+  }
 }

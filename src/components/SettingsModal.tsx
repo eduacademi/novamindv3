@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { X, Key, Save, ShieldCheck } from "lucide-react";
+import { X, Key, Save } from "lucide-react";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -37,7 +37,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
         <div className="p-4 border-b border-[#E2D8C3] flex items-center justify-between bg-[#F4EFE6]">
           <h2 className="text-lg font-bold font-serif-fraunces text-[#3A2E22] flex items-center gap-2">
             <Key className="w-5 h-5 text-[#D85A30]" />
-            Kullanıcı Ayarları & API Key
+            Ayarlar
           </h2>
           <button
             onClick={onClose}
@@ -64,28 +64,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
             </p>
           </div>
 
-          {/* Admin Panel Callout */}
-          <div className="p-4 bg-[#EBE2D0]/60 border border-[#DCD0B9] rounded-2xl space-y-2">
-            <div className="flex items-center space-x-2 font-bold text-xs text-[#3A2E22]">
-              <ShieldCheck className="w-4 h-4 text-[#D85A30]" />
-              <span>SaaS Merkezi API Key Rotasyon Havuzu</span>
-            </div>
-            <p className="text-xs text-[#786958] leading-relaxed">
-              Tüm rotasyonlu API key havuzu, kotaya giren key yönetimi ve SaaS metrikleri **SaaS Admin Paneli** üzerinden yönetilmektedir.
-            </p>
-            {onOpenAdminDashboard && (
-              <button
-                onClick={() => {
-                  onClose();
-                  onOpenAdminDashboard();
-                }}
-                className="w-full mt-1 py-2 bg-[#D85A30] hover:bg-[#C84A20] text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center space-x-1.5 cursor-pointer"
-              >
-                <ShieldCheck className="w-4 h-4" />
-                <span>SaaS Admin Paneline Git (`maviadam123`)</span>
-              </button>
-            )}
-          </div>
         </div>
 
         <div className="p-4 bg-[#F4EFE6] border-t border-[#E2D8C3] flex justify-end gap-2">

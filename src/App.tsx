@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
+import { MessageCircle, Loader2 } from "lucide-react";
 import { User } from "firebase/auth";
 import { Toaster, toast } from "sonner";
 import { Header } from "./components/Header";
 import { CardGrid } from "./components/CardGrid";
 import { RemindersWidget } from "./components/RemindersWidget";
 import { WeeklyDigestWidget } from "./components/WeeklyDigestWidget";
-import { ExportCollectionModal } from "./components/ExportCollectionModal";
-import { MindMapViewer } from "./components/MindMapViewer";
-import { IdeaGenerator } from "./components/IdeaGenerator";
 import { AddCardModal } from "./components/AddCardModal";
 import { PreviewModal } from "./components/PreviewModal";
 import { PwaShareNotice } from "./components/PwaShareNotice";
@@ -17,8 +15,6 @@ import { CommandPalette } from "./components/CommandPalette";
 import { ReaderModeModal } from "./components/ReaderModeModal";
 import { DailyDigestWidget } from "./components/DailyDigestWidget";
 import { AuthModal } from "./components/AuthModal";
-import { UserDashboardModal } from "./components/UserDashboardModal";
-import { AdminDashboardModal } from "./components/AdminDashboardModal";
 import { ChatWidget } from "./components/ChatWidget";
 import { FocusOnboarding } from "./components/FocusOnboarding";
 import { ProjectsHub } from "./components/ProjectsHub";
@@ -38,6 +34,18 @@ import {
   syncAllRemindersToFirestore,
   deleteReminderFromFirestore,
 } from "./lib/firebase";
+
+const ExportCollectionModal = lazy(() => import("./components/ExportCollectionModal").then((m) => ({ default: m.ExportCollectionModal })));
+const MindMapViewer = lazy(() => import("./components/MindMapViewer").then((m) => ({ default: m.MindMapViewer })));
+const IdeaGenerator = lazy(() => import("./components/IdeaGenerator").then((m) => ({ default: m.IdeaGenerator })));
+const UserDashboardModal = lazy(() => import("./components/UserDashboardModal").then((m) => ({ default: m.UserDashboardModal })));
+const AdminDashboardModal = lazy(() => import("./components/AdminDashboardModal").then((m) => ({ default: m.AdminDashboardModal })));
+
+const TabFallback = () => (
+  <div className="flex items-center justify-center py-24 text-slate-500">
+    <Loader2 className="w-6 h-6 animate-spin" />
+  </div>
+);
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -63,8 +71,10 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [initialShareUrl, setInitialShareUrl] = useState("");
   const [initialShareTitle, setInitialShareTitle] = useState("");
+  const [initialShareNote, setInitialShareNote] = useState("");
 
-  const { subscription, isPricingModalOpen, setIsPricingModalOpen, initiateCheckout, isLoading } = useSubscription();
+  const { subscription, usage, limits, isPricingModalOpen, setIsPricingModalOpen, initiateCheckout, isLoading, refreshSubscription } =
+    useSubscription(currentUser?.uid || null, () => setIsAuthModalOpen(true));
 
   // Cmd+K / Ctrl+K Command Palette Shortcut Listener
   useEffect(() => {
@@ -126,41 +136,35 @@ export default function App() {
     };
   }, [currentUser?.uid]);
 
-  // Polling Extension Queue
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch("/api/extension/pop");
-        if (res.ok) {
-          const { items } = await res.json();
-          if (items && items.length > 0) {
-            // Save each item
-            items.forEach((item: Card) => {
-              handleSaveCard(item);
-            });
-            toast.success(`Tarayıcı eklentisinden ${items.length} yeni bağlantı başarıyla eklendi!`);
-          }
-        }
-      } catch (err) {
-        // Suppress background polling warnings
-      }
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [cards, currentUser?.uid]);
-
   // Handle URL search params on mount for Web Share Target PWA
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const sharedUrl = params.get("url") || params.get("text") || "";
+    // Share targets (PWA, browser extension) may put the link in "text" together with other words
+    const rawText = params.get("text") || "";
+    const urlFromText = rawText.match(/https?:\/\/\S+/)?.[0] || "";
+    const sharedUrl = params.get("url") || urlFromText;
     const sharedTitle = params.get("title") || "";
+    let shouldClean = false;
 
-    if (sharedUrl && sharedUrl.startsWith("http")) {
+    if (sharedUrl && /^https?:\/\//.test(sharedUrl)) {
       setInitialShareUrl(sharedUrl);
       setInitialShareTitle(sharedTitle);
+      setInitialShareNote(params.get("note") || "");
       setIsAddModalOpen(true);
-      window.history.replaceState({}, document.title, window.location.pathname);
+      shouldClean = true;
     }
+
+    if (params.get("payment") === "success") {
+      toast.success("Ödemen alındı, paketin aktif edildi. Teşekkürler!");
+      shouldClean = true;
+    }
+
+    if (params.has("admin")) {
+      setIsAdminDashboardOpen(true);
+      shouldClean = true;
+    }
+
+    if (shouldClean) window.history.replaceState({}, document.title, window.location.pathname);
   }, []);
 
   const refreshData = () => {
@@ -227,46 +231,57 @@ export default function App() {
   // Card CRUD Handlers
   const handleSaveCard = (newCard: Card | Card[]) => {
     const newItems = Array.isArray(newCard) ? newCard : [newCard];
-    const updated = [...newItems, ...cards];
-    setCards(updated);
-    saveCards(updated);
+    const maxCards = limits.maxSavedCards;
+    if (maxCards !== -1 && cards.length + newItems.length > maxCards) {
+      toast.error(`Paketindeki ${maxCards} kart sınırına ulaştın. Daha fazla kayıt için paketini yükselt.`);
+      setIsPricingModalOpen(true);
+      return;
+    }
+    setCards((prev) => {
+      const updated = [...newItems, ...prev];
+      saveCards(updated);
+      return updated;
+    });
     if (currentUser?.uid) {
       newItems.forEach((c) => syncCardToFirestore(currentUser.uid, c));
     }
   };
 
   const handleUpdateCard = (updatedCard: Card) => {
-    const updated = cards.map((c) => (c.id === updatedCard.id ? updatedCard : c));
-    setCards(updated);
-    saveCards(updated);
+    setCards((prev) => {
+      const updated = prev.map((c) => (c.id === updatedCard.id ? updatedCard : c));
+      saveCards(updated);
+      return updated;
+    });
     if (currentUser?.uid) syncCardToFirestore(currentUser.uid, updatedCard);
   };
 
   const handleDeleteCard = (id: string) => {
-    const updated = cards.filter((c) => c.id !== id);
-    setCards(updated);
-    saveCards(updated);
+    setCards((prev) => {
+      const updated = prev.filter((c) => c.id !== id);
+      saveCards(updated);
+      return updated;
+    });
     if (currentUser?.uid) deleteCardFromFirestore(currentUser.uid, id);
-    setSelectedCardIds(selectedCardIds.filter((sId) => sId !== id));
+    setSelectedCardIds((prev) => prev.filter((sId) => sId !== id));
   };
 
   const handleBulkDeleteCards = (ids: string[]) => {
     if (currentUser?.uid) {
       ids.forEach((id) => deleteCardFromFirestore(currentUser.uid, id));
     }
-    const updated = cards.filter((c) => !ids.includes(c.id));
-    setCards(updated);
-    saveCards(updated);
+    const idSet = new Set(ids);
+    setCards((prev) => {
+      const updated = prev.filter((c) => !idSet.has(c.id));
+      saveCards(updated);
+      return updated;
+    });
     setSelectedCardIds([]);
   };
 
   // Selection Handlers
   const handleToggleSelectCard = (id: string) => {
-    if (selectedCardIds.includes(id)) {
-      setSelectedCardIds(selectedCardIds.filter((sId) => sId !== id));
-    } else {
-      setSelectedCardIds([...selectedCardIds, id]);
-    }
+    setSelectedCardIds((prev) => (prev.includes(id) ? prev.filter((sId) => sId !== id) : [...prev, id]));
   };
 
   const handleSelectAllCards = () => {
@@ -326,10 +341,10 @@ export default function App() {
   }, {});
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] text-slate-200 flex flex-col selection:bg-indigo-500/30 selection:text-white">
+    <div className="min-h-screen bg-paper text-ink flex flex-col overflow-x-clip selection:bg-indigo-500/30">
       
       {/* Sonner Toast Provider */}
-      <Toaster position="bottom-right" theme="dark" richColors />
+      <Toaster position="bottom-center" theme="light" richColors closeButton />
 
       {!userFocus && <FocusOnboarding onChoose={handleChooseFocus} />}
 
@@ -341,6 +356,7 @@ export default function App() {
         onOpenAddModal={() => {
           setInitialShareUrl("");
           setInitialShareTitle("");
+          setInitialShareNote("");
           setIsAddModalOpen(true);
         }}
         onRefreshData={refreshData}
@@ -421,6 +437,7 @@ export default function App() {
         )}
 
         {/* TAB 2: MindMap / Knowledge Graph */}
+        <Suspense fallback={<TabFallback />}>
         {activeTab === "mindmap" && (
           <MindMapViewer
             cards={cards}
@@ -438,6 +455,7 @@ export default function App() {
             selectedCardIds={selectedCardIds}
           />
         )}
+        </Suspense>
 
       </main>
 
@@ -448,6 +466,8 @@ export default function App() {
       />
 
       {/* User Account & Subscription Dashboard Modal */}
+      <Suspense fallback={null}>
+      {isUserDashboardOpen && (
       <UserDashboardModal
         isOpen={isUserDashboardOpen}
         onClose={() => setIsUserDashboardOpen(false)}
@@ -458,6 +478,19 @@ export default function App() {
         onOpenPricingModal={() => setIsPricingModalOpen(true)}
         onRefreshData={refreshData}
       />
+      )}
+      {isExportModalOpen && (
+        <ExportCollectionModal
+          isOpen={isExportModalOpen}
+          onClose={() => setIsExportModalOpen(false)}
+          cards={cards}
+          selectedCardIds={selectedCardIds}
+        />
+      )}
+      {isAdminDashboardOpen && (
+        <AdminDashboardModal isOpen={isAdminDashboardOpen} onClose={() => setIsAdminDashboardOpen(false)} />
+      )}
+      </Suspense>
 
       {/* Command Palette (Cmd+K / Ctrl+K) */}
       <CommandPalette
@@ -484,6 +517,7 @@ export default function App() {
         existingCards={cards}
         initialUrl={initialShareUrl}
         initialTitle={initialShareTitle}
+        initialNote={initialShareNote}
         userFocus={userFocus}
         activeProject={selectedProject}
       />
@@ -499,14 +533,6 @@ export default function App() {
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         onOpenAdminDashboard={() => setIsAdminDashboardOpen(true)}
-      />
-
-      {/* Export / Newsletter Modal */}
-      <ExportCollectionModal
-        isOpen={isExportModalOpen}
-        onClose={() => setIsExportModalOpen(false)}
-        cards={cards}
-        selectedCardIds={selectedCardIds}
       />
 
       {/* Live Embed Preview Modal */}
@@ -532,12 +558,13 @@ export default function App() {
 
       {/* Floating AI Chat Assistant Trigger Button */}
       <button
-        onClick={() => setIsChatWidgetOpen(prev => !prev)}
-        className="fixed bottom-6 right-6 z-40 p-3.5 bg-gradient-to-tr from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white rounded-full shadow-2xl shadow-indigo-600/50 flex items-center space-x-2 transition-all hover:scale-105 cursor-pointer border border-indigo-400/40"
-        title="AI Asistan ile Kütüphanene Sor"
+        onClick={() => setIsChatWidgetOpen((prev) => !prev)}
+        className="fixed bottom-5 right-5 z-40 pl-3.5 pr-4 py-3 bg-slate-900 hover:bg-slate-800 text-slate-50 rounded-full shadow-xl shadow-slate-900/25 flex items-center gap-2 transition-all hover:-translate-y-0.5 cursor-pointer"
+        style={{ marginBottom: "env(safe-area-inset-bottom)" }}
+        aria-label="AI asistanına kütüphaneni sor"
       >
-        <svg className="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-1.012-.862c.16-.838.455-1.637.868-2.366C4.168 16.326 3 14.28 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"></path></svg>
-        <span className="hidden sm:inline text-xs font-bold">AI Kütüphane Asistanı</span>
+        <MessageCircle className="w-5 h-5" />
+        <span className="hidden sm:inline text-xs font-semibold">Asistana sor</span>
       </button>
 
       {/* Chat Widget Modal */}
@@ -547,15 +574,9 @@ export default function App() {
         onClose={() => setIsChatWidgetOpen(false)}
       />
 
-      {/* SaaS Admin Dashboard Modal */}
-      <AdminDashboardModal
-        isOpen={isAdminDashboardOpen}
-        onClose={() => setIsAdminDashboardOpen(false)}
-      />
-
       {/* Minimal Footer */}
-      <footer className="border-t border-slate-200 py-4 text-center text-xs text-slate-400">
-        <p>NovaMind • Kişisel Link & Medya Kasası • PWA • Tüm Verileriniz Kişisel Hesabınızda Saklanır</p>
+      <footer className="border-t border-slate-200 py-6 text-center text-xs text-slate-500">
+        <p>NovaMind · Kaydettiklerini fikre dönüştür · <a href="/landing" className="underline hover:text-slate-700">Hakkında</a></p>
       </footer>
 
     </div>

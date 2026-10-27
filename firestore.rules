@@ -2,21 +2,40 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /users/{userId} {
-      allow read: if request.auth != null && request.auth.uid == userId;
-      // Allow write to user profile but prevent client from mutating subscription plan fields directly
-      allow write: if request.auth != null && request.auth.uid == userId
-        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['plan', 'isPremium']));
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
 
-      // Subcollections
-      match /subscription/{subDoc} {
-        // Read-only for client; updates can only be written by server Firebase Admin SDK
-        allow read: if request.auth != null && request.auth.uid == userId;
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      // Plan fields are written only by the server (Admin SDK bypasses these rules)
+      allow create: if isOwner(userId)
+        && !request.resource.data.keys().hasAny(['plan', 'isPremium']);
+      allow update: if isOwner(userId)
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['plan', 'isPremium']);
+
+      // Server-managed: subscription & usage quotas are read-only for clients
+      match /subscription/{docId} {
+        allow read: if isOwner(userId);
+        allow write: if false;
+      }
+      match /usage/{docId} {
+        allow read: if isOwner(userId);
         allow write: if false;
       }
 
-      match /{subcollection=**} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+      // User content
+      match /cards/{docId} {
+        allow read, write: if isOwner(userId);
+      }
+      match /reminders/{docId} {
+        allow read, write: if isOwner(userId);
+      }
+      match /shopping_items/{docId} {
+        allow read, write: if isOwner(userId);
+      }
+      match /projects/{docId} {
+        allow read, write: if isOwner(userId);
       }
     }
   }

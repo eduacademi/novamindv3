@@ -46,13 +46,16 @@ class ApiKeyRouterService {
       console.warn("⚠️ Could not load admin keys from disk:", e);
     }
 
-    // Include env GEMINI_API_KEY if present and not already in pool
-    const envKey = process.env.GEMINI_API_KEY;
-    if (envKey && !this.keys.some((k) => k.key === envKey)) {
+    // Env keys: GEMINI_API_KEY plus optional comma-separated GEMINI_API_KEYS pool
+    const envKeys = [process.env.GEMINI_API_KEY, ...(process.env.GEMINI_API_KEYS || "").split(",")]
+      .map((k) => (k || "").trim())
+      .filter((k, i, arr) => k.length > 10 && arr.indexOf(k) === i);
+    envKeys.reverse().forEach((envKey, idx) => {
+      if (this.keys.some((k) => k.key === envKey)) return;
       this.keys.unshift({
-        id: "env-default-key",
+        id: `env-key-${envKeys.length - idx}`,
         key: envKey,
-        label: "Sistem Varsayılan API Key (.env)",
+        label: `Ortam Değişkeni Anahtarı #${envKeys.length - idx}`,
         isFree: true,
         isActive: true,
         status: "active",
@@ -60,7 +63,11 @@ class ApiKeyRouterService {
         errorCount: 0,
         createdAt: Date.now(),
       });
-    }
+    });
+  }
+
+  public hasAnyKey(): boolean {
+    return this.keys.some((k) => k.isActive) || !!process.env.GEMINI_API_KEY;
   }
 
   private saveKeysToDisk() {
@@ -244,7 +251,15 @@ class ApiKeyRouterService {
         apiKey: userCustomKey,
         httpOptions: { headers: { "User-Agent": "aistudio-build" } },
       });
-      return await fn(customClient);
+      try {
+        return await fn(customClient);
+      } catch (err: any) {
+        const invalid = /API_KEY_INVALID|API key not valid/i.test(String(err?.message));
+        throw Object.assign(
+          new Error(invalid ? "Kendi Gemini API anahtarın geçersiz görünüyor. Ayarlar'dan kontrol et." : "Gemini isteği başarısız oldu. Anahtarının kotasını kontrol et."),
+          { status: invalid ? 400 : 502 }
+        );
+      }
     }
 
     // 2. Otherwise rotate through pool keys
@@ -281,7 +296,7 @@ class ApiKeyRouterService {
       } catch (err: any) {
         lastError = err;
         const errMessage = String(err?.message || err);
-        const isRateLimit = errMessage.includes("429") || errMessage.includes("Quota") || errMessage.includes("EXHAUSTED");
+        const isRateLimit = /429|quota|exhausted/i.test(errMessage);
 
         if (isRateLimit) {
           this.markKeyRateLimited(apiKey);
@@ -293,7 +308,8 @@ class ApiKeyRouterService {
       }
     }
 
-    throw lastError || new Error("Tüm API Key'ler denendi ancak başarılı yanıt alınamadı.");
+    console.error("AI request failed on all keys:", lastError?.message || lastError);
+    throw Object.assign(new Error("AI servisi şu an yanıt veremiyor. Lütfen biraz sonra tekrar deneyin."), { status: 502 });
   }
 }
 

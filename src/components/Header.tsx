@@ -78,7 +78,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-30 bg-[#FAF6EE]/90 backdrop-blur-md border-b border-[#E2D8C3] text-[#2C221E] shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
         
         {/* Left: Clean Warm Moleskine Branding */}
         <div className="flex items-center space-x-3 shrink-0">
@@ -92,7 +92,7 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
               <button
                 onClick={currentUser && !currentUser.isAnonymous ? onOpenUserDashboard : onOpenAuthModal}
-                className="px-2.5 py-0.5 text-[11px] font-semibold rounded-full bg-[#EBE2D0] text-[#6B5A47] border border-[#DCD0B9] flex items-center space-x-1.5 hover:bg-[#E2D6C0] transition-colors cursor-pointer"
+                className="hidden sm:flex px-2.5 py-0.5 text-[11px] font-semibold rounded-full bg-[#EBE2D0] text-[#6B5A47] border border-[#DCD0B9] items-center space-x-1.5 hover:bg-[#E2D6C0] transition-colors cursor-pointer"
                 title="Hesap & Senkronizasyon"
               >
                 <span className="w-2 h-2 rounded-full bg-[#D85A30]"></span>
@@ -142,12 +142,12 @@ export const Header: React.FC<HeaderProps> = ({
         </nav>
 
         {/* Right: Tactile Action Controls */}
-        <div className="flex items-center space-x-2.5">
-          
+        <div className="flex items-center gap-2 shrink-0">
+
           {/* Cmd+K Search Trigger */}
           <button
             onClick={onOpenCommandPalette}
-            className="px-3.5 py-1.5 bg-[#FBF7EC] hover:bg-white text-[#5A4A34] text-xs font-medium rounded-xl flex items-center space-x-2 border border-[#DCD0B9] transition-all cursor-pointer shadow-2xs"
+            className="px-2.5 sm:px-3.5 py-1.5 bg-[#FBF7EC] hover:bg-white text-[#5A4A34] text-xs font-medium rounded-xl flex items-center space-x-2 border border-[#DCD0B9] transition-all cursor-pointer shadow-2xs"
             title="Arama Paleti (Cmd+K)"
           >
             <Search className="w-4 h-4 text-[#8A7B5E]" />
@@ -160,7 +160,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Primary CTA: Add Link Button (Terracotta Red) */}
           <button
             onClick={onOpenAddModal}
-            className="px-4 py-1.5 bg-[#D85A30] hover:bg-[#C84A20] active:bg-[#B83A10] text-[#FBF7EC] text-xs font-bold rounded-xl flex items-center space-x-1.5 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
+            className="px-2.5 sm:px-4 py-1.5 bg-[#D85A30] hover:bg-[#C84A20] active:bg-[#B83A10] text-[#FBF7EC] text-xs font-bold rounded-xl flex items-center space-x-1.5 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Kart Ekle</span>
@@ -184,7 +184,7 @@ export const Header: React.FC<HeaderProps> = ({
           ) : (
             <button
               onClick={onOpenAuthModal}
-              className="px-3 py-1.5 bg-[#FBF7EC] hover:bg-white text-[#3A2E22] text-xs font-semibold rounded-xl border border-[#DCD0B9] transition-all cursor-pointer"
+              className="px-3 py-1.5 bg-[#FBF7EC] hover:bg-white text-[#3A2E22] text-xs font-semibold rounded-xl border border-[#DCD0B9] transition-all cursor-pointer whitespace-nowrap"
             >
               Giriş Yap
             </button>
@@ -242,17 +242,6 @@ export const Header: React.FC<HeaderProps> = ({
 
                 <div className="my-1 border-t border-[#DCD0B9]"></div>
 
-                <button
-                  onClick={() => {
-                    setIsMoreMenuOpen(false);
-                    onOpenAdminDashboard();
-                  }}
-                  className="w-full px-4 py-2.5 text-left flex items-center space-x-2 hover:bg-[#EBE2D0] cursor-pointer font-bold text-[#D85A30]"
-                >
-                  <ShieldCheck className="w-4 h-4 text-[#D85A30]" />
-                  <span>SaaS Admin Paneli</span>
-                </button>
-
                 {currentUser && !currentUser.isAnonymous && (
                   <button
                     onClick={() => {
@@ -280,6 +269,25 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
       </div>
+      {/* Mobile tab bar */}
+      <nav className="md:hidden flex items-stretch border-t border-[#E2D8C3] text-[11px] font-semibold">
+        {([
+          ["library", "Kartlar", Bookmark],
+          ["mindmap", "Graph", Network],
+          ["ideas", "Fikirler", Sparkles],
+        ] as const).map(([tab, label, Icon]) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`flex-1 py-2.5 flex items-center justify-center gap-1.5 cursor-pointer border-b-2 transition-colors ${
+              activeTab === tab ? "border-[#D85A30] text-[#3A2E22]" : "border-transparent text-[#786958]"
+            }`}
+          >
+            <Icon className="w-4 h-4" />
+            {label}
+          </button>
+        ))}
+      </nav>
     </header>
   );
 };

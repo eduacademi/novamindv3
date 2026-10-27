@@ -3,6 +3,8 @@ import { X as CloseIcon, Link as LinkIcon, Sparkles, AlertCircle, Loader2, Tag, 
 import { Card, Platform, Project, UserFocus } from "../types";
 import { detectPlatform, PLATFORMS } from "../lib/platformHelper";
 import { decodeHTMLEntities } from "../lib/textHelper";
+import { apiFetch, readApiError } from "../lib/api";
+import { toast } from "sonner";
 
 interface AddCardModalProps {
   isOpen: boolean;
@@ -11,6 +13,7 @@ interface AddCardModalProps {
   existingCards: Card[];
   initialUrl?: string;
   initialTitle?: string;
+  initialNote?: string;
   userFocus?: UserFocus | null;
   activeProject?: Project | null;
 }
@@ -49,6 +52,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
   existingCards,
   initialUrl = "",
   initialTitle = "",
+  initialNote = "",
   userFocus = null,
   activeProject = null,
 }) => {
@@ -92,7 +96,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
       setDescription("");
       setThumbnailUrl("");
       setAuthor("");
-      setNote("");
+      setNote(initialNote || "");
       setCategory("");
       setTagInput("");
       setTags([]);
@@ -104,7 +108,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
       setIsAiCategorizing(false);
       setIsFetchingBatch(false);
     }
-  }, [isOpen, initialUrl, initialTitle]);
+  }, [isOpen, initialUrl, initialTitle, initialNote]);
 
   useEffect(() => {
     if (url) {
@@ -131,9 +135,9 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
     if (!url) return;
     setIsLoadingMetadata(true);
     try {
-      const response = await fetch("/api/metadata", {
+      const response = await apiFetch("/api/metadata", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-gemini-api-key": localStorage.getItem("x-gemini-api-key") || "" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
       });
       const data = await response.json();
@@ -159,9 +163,9 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
 
     setIsFetchingBatch(true);
     try {
-      const response = await fetch("/api/batch-metadata", {
+      const response = await apiFetch("/api/batch-metadata", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-gemini-api-key": localStorage.getItem("x-gemini-api-key") || "" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ urls }),
       });
       const data = await response.json();
@@ -222,11 +226,12 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
     try {
       if (addMode === "bulk" && bulkItems.length > 0) {
         // Send bulk items to analyze each separately
-        const response = await fetch("/api/gemini/categorize", {
+        const response = await apiFetch("/api/gemini/categorize", {
           method: "POST",
-          headers: { "Content-Type": "application/json", "x-gemini-api-key": localStorage.getItem("x-gemini-api-key") || "" },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ items: bulkItems }),
         });
+        if (!response.ok) throw new Error(await readApiError(response, "AI etiketleme başarısız oldu."));
         const data = await response.json();
         if (data.items && Array.isArray(data.items)) {
           setBulkItems(data.items.map((it: any, i: number) => ({
@@ -236,9 +241,9 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
           })));
         }
       } else {
-        const response = await fetch("/api/gemini/categorize", {
+        const response = await apiFetch("/api/gemini/categorize", {
           method: "POST",
-          headers: { "Content-Type": "application/json", "x-gemini-api-key": localStorage.getItem("x-gemini-api-key") || "" },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             title,
             description,
@@ -247,6 +252,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
             platform
           }),
         });
+        if (!response.ok) throw new Error(await readApiError(response, "AI etiketleme başarısız oldu."));
         const data = await response.json();
         if (data.category) setCategory(data.category);
         if (Array.isArray(data.tags)) {
@@ -254,8 +260,9 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
           setTags(merged);
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("AI categorize error:", err);
+      toast.error(err?.message || "AI etiketleme başarısız oldu.");
     } finally {
       setIsAiCategorizing(false);
     }
@@ -289,9 +296,9 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
 
         setIsFetchingBatch(true);
         try {
-          const resp = await fetch("/api/batch-metadata", {
+          const resp = await apiFetch("/api/batch-metadata", {
             method: "POST",
-            headers: { "Content-Type": "application/json", "x-gemini-api-key": localStorage.getItem("x-gemini-api-key") || "" },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ urls }),
           });
           const data = await resp.json();

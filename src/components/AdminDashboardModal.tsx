@@ -35,7 +35,7 @@ interface RouterMetrics {
 }
 
 export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen, onClose }) => {
-  const [adminSecret, setAdminSecret] = useState<string>(() => localStorage.getItem("admin_secret_key") || "");
+  const [adminSecret, setAdminSecret] = useState<string>(() => sessionStorage.getItem("admin_secret_key") || "");
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [passwordInput, setPasswordInput] = useState<string>("");
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
@@ -46,7 +46,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
   // Router & Keys Data
   const [keysList, setKeysList] = useState<ManagedKeyUI[]>([]);
   const [metrics, setMetrics] = useState<RouterMetrics | null>(null);
-  const [neo4jStatus, setNeo4jStatus] = useState<{ active: boolean; uri: string } | null>(null);
+  const [neo4jStatus, setNeo4jStatus] = useState<{ active: boolean; configured?: boolean } | null>(null);
 
   // New Key Form
   const [newKeyInput, setNewKeyInput] = useState("");
@@ -78,13 +78,13 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
       }
       if (res.ok && data.success) {
         setIsAuthenticated(true);
-        localStorage.setItem("admin_secret_key", secretToTest);
+        sessionStorage.setItem("admin_secret_key", secretToTest);
         setAdminSecret(secretToTest);
         fetchAdminData(secretToTest);
       } else {
         setIsAuthenticated(false);
         if (secretToTest === adminSecret) {
-          localStorage.removeItem("admin_secret_key");
+          sessionStorage.removeItem("admin_secret_key");
           setAdminSecret("");
         }
         toast.error(data.error || "Geçersiz Admin Şifresi!");
@@ -263,8 +263,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
               Yönetici Girişi Yapın
             </h3>
             <p className="text-xs text-[#786958] mb-6 leading-relaxed">
-              API key havuzunu ve sistem parametrelerini yönetmek için Admin Gizli Şifrenizi girin.
-              *(Varsayılan şifre: <code className="font-mono text-[#D85A30] bg-[#EBE2D0] px-1.5 py-0.5 rounded font-bold">maviadam123</code>)*
+              API key havuzunu ve sistem durumunu yönetmek için sunucuda tanımlı ADMIN_SECRET_KEY değerini girin.
             </p>
 
             <form onSubmit={handleLoginSubmit} className="w-full space-y-3">
@@ -570,7 +569,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
                       <span className={`px-2.5 py-1 rounded-full font-bold ${neo4jStatus?.active ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700"}`}>
                         {neo4jStatus?.active ? "🟢 Bağlı & Aktif" : "⚪ Yerel Mod (Neo4j Bağlantısı Yok)"}
                       </span>
-                      <span className="font-mono text-[#786958]">URI: {neo4jStatus?.uri}</span>
+                      <span className="font-mono text-[#786958]">{neo4jStatus?.configured ? "NEO4J_URI tanımlı" : "NEO4J_URI tanımlı değil"}</span>
                     </div>
                   </div>
                 </div>

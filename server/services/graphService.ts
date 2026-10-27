@@ -44,7 +44,7 @@ export async function syncCardToGraph(userId: string, card: any): Promise<boolea
       await tx.run(
         `
         MERGE (u:User {id: $userId})
-        MERGE (c:Card {id: $cardId})
+        MERGE (c:Card {id: $cardId, userId: $userId})
         SET c.title = $title,
             c.url = $url,
             c.platform = $platform,
@@ -104,7 +104,7 @@ export async function syncAllCardsToGraph(userId: string, cards: any[]): Promise
         await tx.run(
           `
           MERGE (u:User {id: $userId})
-          MERGE (c:Card {id: $cardId})
+          MERGE (c:Card {id: $cardId, userId: $userId})
           SET c.title = $title,
               c.url = $url,
               c.platform = $platform,

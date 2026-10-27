@@ -1,11 +1,14 @@
 export type PlanType = "free" | "pro" | "premium";
+export type BillingPeriod = "monthly" | "yearly";
+export type AiFeature = "categorize" | "mindmap" | "ideas" | "chat";
 
 export interface PlanFeatureLimits {
-  maxSavedCards: number; // e.g. 50 for free, 1000 for pro, -1 for unlimited
-  maxDailyAiCategorize: number; // 10 free, 100 pro, -1 unlimited
-  maxMonthlyMindmaps: number; // 3 free, 30 pro, -1 unlimited
-  maxMonthlyIdeas: number; // 3 free, 30 pro, -1 unlimited
-  hasServerAiKey: boolean; // false for free (use BYOK), true for pro/premium
+  maxSavedCards: number; // -1 = unlimited
+  maxDailyAiCategorize: number;
+  maxDailyChat: number;
+  maxMonthlyMindmaps: number;
+  maxMonthlyIdeas: number;
+  hasServerAiKey: boolean;
   hasChromeExtension: boolean;
   hasWeeklyDigest: boolean;
 }
@@ -14,15 +17,17 @@ export const PLAN_LIMITS: Record<PlanType, PlanFeatureLimits> = {
   free: {
     maxSavedCards: 50,
     maxDailyAiCategorize: 10,
+    maxDailyChat: 10,
     maxMonthlyMindmaps: 3,
     maxMonthlyIdeas: 3,
-    hasServerAiKey: false, // free users use BYOK (own key) or limited fallback
-    hasChromeExtension: false,
+    hasServerAiKey: true,
+    hasChromeExtension: true,
     hasWeeklyDigest: false,
   },
   pro: {
     maxSavedCards: 1000,
     maxDailyAiCategorize: 100,
+    maxDailyChat: 100,
     maxMonthlyMindmaps: 30,
     maxMonthlyIdeas: 30,
     hasServerAiKey: true,
@@ -32,6 +37,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanFeatureLimits> = {
   premium: {
     maxSavedCards: -1,
     maxDailyAiCategorize: -1,
+    maxDailyChat: -1,
     maxMonthlyMindmaps: -1,
     maxMonthlyIdeas: -1,
     hasServerAiKey: true,
@@ -46,16 +52,18 @@ export interface UserSubscription {
   status: "active" | "cancelled" | "expired";
   startsAt: number;
   expiresAt: number;
+  billingPeriod?: BillingPeriod;
   paymentProvider: "shopier" | "iyzico" | "manual";
   orderId?: string;
+  processedOrderIds?: string[];
   customerEmail?: string;
 }
 
 export interface UserUsageStats {
-  userId: string;
-  savedCardsCount: number;
-  dailyAiCategorizeCount: number;
-  monthlyMindmapsCount: number;
-  monthlyIdeasCount: number;
-  lastResetDate: string; // YYYY-MM-DD
+  day: string; // YYYY-MM-DD
+  month: string; // YYYY-MM
+  categorize: number;
+  chat: number;
+  mindmap: number;
+  ideas: number;
 }

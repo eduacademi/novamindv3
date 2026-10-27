@@ -1,22 +1,18 @@
 import { ScrapedMetadata, InferredCategory } from "../types/index";
+import { assertPublicUrl, safeFetchText } from "../lib/urlSafety";
 
 // Helper for scraping OpenGraph meta tags from standard websites
 export async function fetchOpenGraphMeta(url: string) {
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-    const response = await fetch(url, {
-      signal: controller.signal,
+    const response = await safeFetchText(url, {
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Accept-Language": "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7"
       }
     });
-    clearTimeout(timeoutId);
 
     if (!response.ok) return null;
-    const html = await response.text();
+    const html = response.text;
 
     const getMeta = (property: string) => {
       const match = html.match(new RegExp(`<meta[^>]+(?:property|name)=["']${property}["'][^>]+content=["']([^"']+)["']`, "i"))
@@ -353,6 +349,8 @@ export async function fetchInstagramMeta(url: string): Promise<Omit<ScrapedMetad
 // Helper function for fetching single URL metadata
 export async function fetchSingleMetadata(url: string): Promise<ScrapedMetadata> {
   const cleanUrl = url.trim();
+  // Reject non-http(s) and private/internal targets before any network call (SSRF guard)
+  await assertPublicUrl(cleanUrl);
   const lower = cleanUrl.toLowerCase();
 
   try {

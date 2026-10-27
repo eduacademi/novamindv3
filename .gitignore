@@ -8,3 +8,4 @@ coverage/
 !.env.example
 *.zip
 .codebase-memory/
+server/config/admin_keys.json

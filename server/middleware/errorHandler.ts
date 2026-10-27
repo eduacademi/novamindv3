@@ -1,15 +1,15 @@
 import { Request, Response, NextFunction } from "express";
 
-export function globalErrorHandler(err: any, req: Request, res: Response, next: NextFunction) {
-  console.error("Global Server Error:", err);
+export function globalErrorHandler(err: any, _req: Request, res: Response, _next: NextFunction) {
+  const statusCode = Number(err?.status || err?.statusCode) || 500;
+  if (statusCode >= 500) console.error("Server Error:", err);
 
-  const statusCode = err.status || err.statusCode || 500;
-  const message = process.env.NODE_ENV === "production" 
-    ? "Sunucuda beklenmeyen bir hata oluştu." 
-    : (err.message || "İç Sunucu Hatası");
+  // 4xx messages are written for users; 5xx details stay in the logs in production
+  const message =
+    statusCode < 500 || process.env.NODE_ENV !== "production"
+      ? err?.message || "İstek işlenemedi."
+      : "Sunucuda beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.";
 
-  res.status(statusCode).json({
-    error: message,
-    ...(process.env.NODE_ENV !== "production" && { stack: err.stack })
-  });
+  if (res.headersSent) return;
+  res.status(statusCode).json({ error: message });
 }

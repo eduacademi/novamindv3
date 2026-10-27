@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Sparkles, Combine, Shuffle, MessageSquare, Loader2, Bookmark, Check, ArrowRight, Lightbulb, Save, Trash2 } from "lucide-react";
 import { Card, IdeaResult } from "../types";
 import { getSavedIdeas, saveSavedIdeas } from "../lib/storage";
+import { apiFetch } from "../lib/api";
 
 interface IdeaGeneratorProps {
  cards: Card[];
@@ -44,9 +45,9 @@ export const IdeaGenerator: React.FC<IdeaGeneratorProps> = ({
  setErrorMsg(null);
 
  try {
- const response = await fetch("/api/gemini/ideas", {
+ const response = await apiFetch("/api/gemini/ideas", {
  method: "POST",
- headers: { "Content-Type": "application/json", "x-gemini-api-key": localStorage.getItem("x-gemini-api-key") || "" },
+ headers: { "Content-Type": "application/json" },
  body: JSON.stringify({
  mode: activeMode,
  cards,

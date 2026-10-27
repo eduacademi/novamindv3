@@ -55,7 +55,7 @@ export const WeeklyDigestWidget: React.FC<WeeklyDigestWidgetProps> = ({
   if (cards.length === 0) return null;
 
   return (
-    <div className="bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 text-white rounded-3xl p-5 shadow-lg border border-indigo-800/60 relative overflow-hidden space-y-4">
+    <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-white rounded-3xl p-5 shadow-lg border border-slate-800 relative overflow-hidden space-y-4">
       {/* Background glow effects */}
       <div className="absolute -top-12 -right-12 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />

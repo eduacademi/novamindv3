@@ -3,41 +3,47 @@ import { apiKeyRouter } from "../services/apiKeyRouter";
 import { PRICING_CONFIG } from "../services/paymentService";
 import { getNeo4jDriver } from "../config/neo4j";
 import { GoogleGenAI } from "@google/genai";
+import crypto from "crypto";
+import rateLimit from "express-rate-limit";
+import { isShopierConfigured } from "../services/paymentService";
+import { GEMINI_MODEL } from "../services/geminiService";
+
+const adminLoginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false, message: { error: "Çok fazla deneme. 15 dakika sonra tekrar deneyin." } });
 
 const router = Router();
 
-// Allows default 'maviadam123', legacy 'admin123', OR custom process.env.ADMIN_SECRET_KEY
-const isValidSecret = (inputSecret: string): boolean => {
-  const cleanInput = (inputSecret || "").trim();
-  if (!cleanInput) return false;
+/**
+ * Admin access requires ADMIN_SECRET_KEY (min. 16 chars) in the environment.
+ * There is intentionally no built-in default password.
+ */
+const isValidSecret = (inputSecret: unknown): boolean => {
   const envSecret = (process.env.ADMIN_SECRET_KEY || "").trim();
-  return (
-    cleanInput === "maviadam123" ||
-    cleanInput === "admin123" ||
-    (!!envSecret && cleanInput === envSecret)
-  );
+  const input = typeof inputSecret === "string" ? inputSecret.trim() : "";
+  if (envSecret.length < 16 || !input) return false;
+  const a = crypto.createHash("sha256").update(input).digest();
+  const b = crypto.createHash("sha256").update(envSecret).digest();
+  return crypto.timingSafeEqual(a, b);
 };
 
-// Admin Authentication Middleware
 function checkAdminAuth(req: Request, res: Response, next: NextFunction) {
-  const secret = ((req.headers["x-admin-secret"] as string) || req.body?.adminSecret || req.query?.adminSecret || "").trim();
-  if (!isValidSecret(secret)) {
-    return res.status(401).json({ error: "Yetkisiz erişim. Geçersiz Admin Şifresi." });
+  if (!isValidSecret(req.headers["x-admin-secret"])) {
+    return res.status(401).json({ error: "Yetkisiz erişim." });
   }
   next();
 }
 
-// POST /api/admin/login or /admin/login or /login - Verify Admin Secret
-router.post(["/admin/login", "/login"], (req, res) => {
-  const secret = (req.body?.secret || "").trim();
-  if (isValidSecret(secret)) {
-    return res.json({ success: true, message: "Admin girişi başarılı." });
+router.post("/admin/login", adminLoginLimiter, (req, res) => {
+  if (!(process.env.ADMIN_SECRET_KEY || "").trim()) {
+    return res.status(503).json({ error: "Admin paneli kapalı: sunucuda ADMIN_SECRET_KEY tanımlı değil." });
   }
-  return res.status(401).json({ error: "Geçersiz Admin Şifresi." });
+  if (isValidSecret(req.body?.secret)) {
+    return res.json({ success: true });
+  }
+  return res.status(401).json({ error: "Geçersiz admin şifresi." });
 });
 
 // GET /api/admin/metrics - Overall SaaS Stats & Key Router Metrics
-router.get(["/admin/metrics", "/metrics"], checkAdminAuth, async (req, res) => {
+router.get("/admin/metrics", checkAdminAuth, async (req, res) => {
   const routerMetrics = apiKeyRouter.getMetrics();
   const neo4jDriver = getNeo4jDriver();
 
@@ -46,24 +52,26 @@ router.get(["/admin/metrics", "/metrics"], checkAdminAuth, async (req, res) => {
     router: routerMetrics,
     neo4j: {
       active: !!neo4jDriver,
-      uri: process.env.NEO4J_URI || "Bağlı değil",
+      configured: !!process.env.NEO4J_URI,
     },
     payment: {
-      shopierConfigured: !!(process.env.SHOPIER_API_KEY && process.env.SHOPIER_API_SECRET),
+      shopierConfigured: isShopierConfigured(),
+      firestoreConfigured: !!process.env.FIREBASE_SERVICE_ACCOUNT_KEY,
+      model: GEMINI_MODEL,
       pricingConfig: PRICING_CONFIG,
     },
   });
 });
 
 // GET /api/admin/keys - Fetch all API keys in pool
-router.get(["/admin/keys", "/keys"], checkAdminAuth, (req, res) => {
+router.get("/admin/keys", checkAdminAuth, (req, res) => {
   const keys = apiKeyRouter.getKeysPool();
   const metrics = apiKeyRouter.getMetrics();
   return res.json({ keys, metrics });
 });
 
 // POST /api/admin/keys - Add a new API Key into pool
-router.post(["/admin/keys", "/keys"], checkAdminAuth, (req, res) => {
+router.post("/admin/keys", checkAdminAuth, (req, res) => {
   const { key, label, isFree } = req.body;
   if (!key || typeof key !== "string" || key.trim().length < 10) {
     return res.status(400).json({ error: "Geçerli bir API Key zorunludur." });
@@ -79,7 +87,7 @@ router.post(["/admin/keys", "/keys"], checkAdminAuth, (req, res) => {
 });
 
 // DELETE /api/admin/keys/:id - Remove key from pool
-router.delete(["/admin/keys/:id", "/keys/:id"], checkAdminAuth, (req, res) => {
+router.delete("/admin/keys/:id", checkAdminAuth, (req, res) => {
   const { id } = req.params;
   const removed = apiKeyRouter.removeKey(id);
   if (removed) {
@@ -89,7 +97,7 @@ router.delete(["/admin/keys/:id", "/keys/:id"], checkAdminAuth, (req, res) => {
 });
 
 // POST /api/admin/keys/:id/toggle - Enable or disable key
-router.post(["/admin/keys/:id/toggle", "/keys/:id/toggle"], checkAdminAuth, (req, res) => {
+router.post("/admin/keys/:id/toggle", checkAdminAuth, (req, res) => {
   const { id } = req.params;
   const toggled = apiKeyRouter.toggleKeyActive(id);
   if (toggled) {
@@ -99,7 +107,7 @@ router.post(["/admin/keys/:id/toggle", "/keys/:id/toggle"], checkAdminAuth, (req
 });
 
 // POST /api/admin/keys/test - Test an API key with lightweight call
-router.post(["/admin/keys/test", "/keys/test"], checkAdminAuth, async (req, res) => {
+router.post("/admin/keys/test", checkAdminAuth, async (req, res) => {
   const { key } = req.body;
   const targetKey = key || apiKeyRouter.getNextApiKey();
 
@@ -114,7 +122,7 @@ router.post(["/admin/keys/test", "/keys/test"], checkAdminAuth, async (req, res)
     });
 
     const response = await aiClient.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: GEMINI_MODEL,
       contents: "Say Hello in one word.",
     });
 

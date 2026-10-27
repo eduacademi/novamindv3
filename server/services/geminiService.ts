@@ -3,6 +3,46 @@ import { Request } from "express";
 import { inferCategoryAndTags } from "./scraperService";
 import { apiKeyRouter } from "./apiKeyRouter";
 
+/** Model is configurable; the "latest" alias keeps working when Google retires a version. */
+export const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-flash-latest";
+
+const MAX_CARDS_FOR_AI = 150;
+
+export function isAiConfigured(req: Request): boolean {
+  return !!req.headers["x-gemini-api-key"] || apiKeyRouter.hasAnyKey();
+}
+
+const clip = (value: unknown, max: number) => (typeof value === "string" ? value.slice(0, max) : "");
+
+/** Keeps prompts bounded: newest cards first, long text truncated. */
+function compactCards(cards: any[]) {
+  return (Array.isArray(cards) ? cards : [])
+    .slice(0, MAX_CARDS_FOR_AI)
+    .map((c: any) => ({
+      id: clip(c?.id, 80),
+      title: clip(c?.title, 200) || "İsimsiz",
+      note: clip(c?.note, 600),
+      description: clip(c?.description, 300),
+      category: clip(c?.category, 60),
+      tags: Array.isArray(c?.tags) ? c.tags.slice(0, 8).map((t: unknown) => clip(t, 40)) : [],
+      platform: clip(c?.platform, 30),
+      url: clip(c?.url, 500),
+    }));
+}
+
+function parseJson<T>(text: string | undefined, fallback: T): T {
+  if (!text) return fallback;
+  try {
+    return JSON.parse(text);
+  } catch {
+    const match = text.match(/[\[{][\s\S]*[\]}]/);
+    if (match) {
+      try { return JSON.parse(match[0]); } catch { /* ignore */ }
+    }
+    return fallback;
+  }
+}
+
 // Batch Gemini Categorizer helper function to analyze EACH link independently
 export async function batchCategorizeWithGemini(req: Request, rawItems: any[]) {
   if (!rawItems || rawItems.length === 0) return rawItems;
@@ -19,11 +59,11 @@ export async function batchCategorizeWithGemini(req: Request, rawItems: any[]) {
   try {
     const payload = items.map((item, idx) => ({
       id: idx,
-      url: item.url,
-      platform: item.platform || "unknown",
-      title: item.title || "",
-      description: item.description || "",
-      note: item.note || ""
+      url: clip(item.url, 500),
+      platform: clip(item.platform, 30) || "unknown",
+      title: clip(item.title, 200),
+      description: clip(item.description, 300),
+      note: clip(item.note, 400)
     }));
 
     const prompt = `Sana aşağıda ${payload.length} adet farklı web bağlantısı/bookmark verisi veriyorum.
@@ -38,7 +78,7 @@ ${JSON.stringify(payload, null, 2)}
 
     return await apiKeyRouter.executeWithSmartRotation(req, async (aiClient) => {
       const response = await aiClient.models.generateContent({
-        model: "gemini-3.6-flash",
+        model: GEMINI_MODEL,
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -66,8 +106,7 @@ ${JSON.stringify(payload, null, 2)}
         }
       });
 
-      const jsonText = response.text || "{}";
-      const result = JSON.parse(jsonText);
+      const result = parseJson<any>(response.text, {});
 
       if (result.categorized_items && Array.isArray(result.categorized_items)) {
         result.categorized_items.forEach((catItem: any) => {
@@ -110,7 +149,7 @@ Yanıtını kesinlikle aşağıdaki JSON yapısında döndür:
 
   return await apiKeyRouter.executeWithSmartRotation(req, async (aiClient) => {
     const response = await aiClient.models.generateContent({
-      model: "gemini-3.6-flash",
+      model: GEMINI_MODEL,
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -128,20 +167,12 @@ Yanıtını kesinlikle aşağıdaki JSON yapısında döndür:
       }
     });
 
-    const jsonText = response.text || "{}";
-    return JSON.parse(jsonText);
+    return parseJson<any>(response.text, {});
   });
 }
 
 export async function generateMindmapWithGemini(req: Request, cards: any[]) {
-  const cardsSummary = cards.map((c: any) => ({
-    id: c.id,
-    title: c.title || "İsimsiz Kart",
-    note: c.note || "",
-    category: c.category || "Genel",
-    tags: c.tags || [],
-    platform: c.platform
-  }));
+  const cardsSummary = compactCards(cards).map(({ id, title, note, category, tags, platform }) => ({ id, title, note, category, tags, platform }));
 
   const prompt = `Sen kişisel bir bilgi kütüphanesinden tema ve zihin haritası (Mind Map / Knowledge Graph) çıkaran uzman bir AI analistisin.
 
@@ -164,28 +195,21 @@ Düğüm yapısı: { "id": "string", "label": "string", "summary": "string", "co
 
   return await apiKeyRouter.executeWithSmartRotation(req, async (aiClient) => {
     const response = await aiClient.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: GEMINI_MODEL,
       contents: prompt,
       config: {
         responseMimeType: "application/json"
       }
     });
 
-    const jsonText = response.text || "{}";
-    return JSON.parse(jsonText);
+    return parseJson<any>(response.text, {});
   });
 }
 
 export async function chatWithBookmarks(req: Request, options: { query: string; cards: any[] }) {
   const { query, cards } = options;
 
-  const cardsData = cards.map((c: any) => ({
-    title: c.title || "İsimsiz",
-    note: c.note || "",
-    description: c.description || "",
-    category: c.category || "",
-    url: c.url || ""
-  }));
+  const cardsData = compactCards(cards).map(({ title, note, description, category, url }) => ({ title, note, description, category, url }));
 
   const prompt = `Sen NovaMind uygulamasının yapay zeka asistanısın. Kullanıcı sana kendi kişisel kütüphanesindeki (kaydettiği bağlantılar, notlar ve yer imleri) verilerle ilgili bir soru soruyor.
 Görevin, aşağıdaki kullanıcının verilerini inceleyerek onun sorusuna doğrudan, net ve arkadaşça bir dilde (Türkçe) yanıt vermek. Gerekirse ilgili içeriklerin bağlantılarını (URL) veya başlıklarını referans göster.
@@ -199,7 +223,7 @@ Eğer kullanıcının sorusu mevcut verilerle tam olarak cevaplanamıyorsa, "Kü
 
   return await apiKeyRouter.executeWithSmartRotation(req, async (aiClient) => {
     const response = await aiClient.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: GEMINI_MODEL,
       contents: prompt
     });
 
@@ -219,17 +243,10 @@ Seçilen veya öne çıkan kartlar arasındaki beklenmedik kesişim noktalarınd
 Kullanıcının kütüphanesindeki farklı alanlardan rastgele ve sıra dışı kombinasyonlar yaparak bugün hemen başlanabilecek ilham verici aksiyonel fikirler üret.`;
   } else {
     modeInstruction = `ÖZELLİK: Özel Fikir Beyin Fırtınası
-Kullanıcının şu isteğine göre kütüphanesindeki notları harmanla: "${customPrompt || "Genel fikir üretimi"}"`;
+Kullanıcının şu isteğine göre kütüphanesindeki notları harmanla: "${clip(customPrompt, 1000) || "Genel fikir üretimi"}"`;
   }
 
-  const cardsData = cards.map((c: any) => ({
-    id: c.id,
-    title: c.title || "İsimsiz",
-    note: c.note || "",
-    category: c.category || "",
-    tags: c.tags || [],
-    platform: c.platform
-  }));
+  const cardsData = compactCards(cards).map(({ id, title, note, category, tags, platform }) => ({ id, title, note, category, tags, platform }));
 
   const prompt = `Sen dünyaca ünlü yaratıcı düşünce koçu ve inovasyon stratejistisin.
 Kullanıcının kişisel kütüphanesinde biriktirdiği içerik notlarından güç alarak yepyeni, sürprizli ve yüksek katma değerli fikirler üreteceksin.
@@ -259,14 +276,14 @@ Yanıtını aşağıdaki JSON şemasında dizi olarak ver:
 
   return await apiKeyRouter.executeWithSmartRotation(req, async (aiClient) => {
     const response = await aiClient.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: GEMINI_MODEL,
       contents: prompt,
       config: {
         responseMimeType: "application/json"
       }
     });
 
-    const jsonText = response.text || "[]";
-    return JSON.parse(jsonText);
+    const parsed = parseJson<any>(response.text, []);
+    return Array.isArray(parsed) ? parsed : Array.isArray(parsed?.ideas) ? parsed.ideas : [];
   });
 }

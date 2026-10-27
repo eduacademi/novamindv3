@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { UserSubscription, PLAN_LIMITS } from "../../server/types/subscription";
 import { Card, ReminderItem } from "../types";
 import { exportBackupJSON, importBackupJSON } from "../lib/storage";
+import { apiFetch } from "../lib/api";
 
 interface UserDashboardModalProps {
   isOpen: boolean;
@@ -92,7 +93,7 @@ export const UserDashboardModal: React.FC<UserDashboardModalProps> = ({
   const handleTriggerGraphSync = async () => {
     setIsSyncingGraph(true);
     try {
-      const res = await fetch("/api/graph/sync", {
+      const res = await apiFetch("/api/graph/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ cards }),

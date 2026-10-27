@@ -110,6 +110,8 @@ export const CardItem: React.FC<CardItemProps> = ({
             <img
               src={card.thumbnail_url}
               alt={card.title || "Görsel"}
+              loading="lazy"
+              decoding="async"
               referrerPolicy="no-referrer"
               className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform duration-500"
               onError={() => setImgFailed(true)}
@@ -120,7 +122,7 @@ export const CardItem: React.FC<CardItemProps> = ({
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-between text-xs text-[#6B5A47]">
+          <div className={`flex items-center justify-between gap-2 text-xs text-[#6B5A47] pr-9 ${onToggleSelect ? "pl-6" : ""}`}>
             <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded bg-[#EBE2D0] border border-[#DCD0B9] text-[11px] font-bold text-[#3A2E22]">
               {getPlatformIcon(card.platform)}
               <span>{platformInfo.name}</span>
@@ -134,7 +136,7 @@ export const CardItem: React.FC<CardItemProps> = ({
           <span className="inline-block bg-[#D85A30] text-[#FBF7EC] text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-xs transform -rotate-1 shadow-2xs">
             {card.category || "Genel Not"}
           </span>
-          {card.thumbnail_url && (
+          {card.thumbnail_url && !imgFailed && (
             <time className="text-[11px] font-mono text-[#8A7B5E]">{formattedDate}</time>
           )}
         </div>

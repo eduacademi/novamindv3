@@ -32,6 +32,7 @@ import { Card, MindMapData, MindMapNode, Platform } from "../types";
 import { getCachedMindMap, saveCachedMindMap } from "../lib/storage";
 import { decodeHTMLEntities } from "../lib/textHelper";
 import { PLATFORMS } from "../lib/platformHelper";
+import { apiFetch } from "../lib/api";
 
 interface MindMapViewerProps {
   cards: Card[];
@@ -116,22 +117,17 @@ export const MindMapViewer: React.FC<MindMapViewerProps> = ({
   const [clusteringEnabled, setClusteringEnabled] = useState<boolean>(false);
   const [isNeo4jActive, setIsNeo4jActive] = useState<boolean | null>(null);
 
-  // Sync cards with Neo4j Graph DB in the background
+  // Sync cards with Neo4j Graph DB in the background (debounced; no-op server-side without Neo4j)
   useEffect(() => {
-    if (cards.length > 0) {
-      fetch("/api/graph/sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cards }),
-      })
+    if (cards.length === 0) return;
+    const timer = setTimeout(() => {
+      const payload = cards.map(({ id, title, url, platform, note, category, tags }) => ({ id, title, url, platform, note, category, tags }));
+      apiFetch("/api/graph/sync", { method: "POST", body: JSON.stringify({ cards: payload }) })
         .then((res) => res.json())
-        .then((data) => {
-          setIsNeo4jActive(!!data.success);
-        })
-        .catch(() => {
-          setIsNeo4jActive(false);
-        });
-    }
+        .then((data) => setIsNeo4jActive(!!data.success))
+        .catch(() => setIsNeo4jActive(false));
+    }, 2500);
+    return () => clearTimeout(timer);
   }, [cards]);
 
   // Canvas State & Controls
@@ -231,11 +227,10 @@ export const MindMapViewer: React.FC<MindMapViewerProps> = ({
     }
 
     try {
-      const response = await fetch("/api/gemini/mindmap", {
+      const response = await apiFetch("/api/gemini/mindmap", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "x-gemini-api-key": localStorage.getItem("x-gemini-api-key") || ""
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({ cards: targetCards }),
       });

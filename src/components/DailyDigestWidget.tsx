@@ -19,7 +19,7 @@ export const DailyDigestWidget: React.FC<DailyDigestWidgetProps> = ({ cards, onO
   const currentCard = digestCards[activeIndex] || digestCards[0];
 
   return (
-    <div className="bg-gradient-to-r from-indigo-950/40 via-slate-900 to-slate-900 border border-indigo-500/30 rounded-3xl p-5 md:p-6 shadow-xl relative overflow-hidden mb-6">
+    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 md:p-6 shadow-xl relative overflow-hidden mb-6">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-800/80 pb-4 mb-4">
         <div className="flex items-center space-x-2.5">
           <div className="w-8 h-8 rounded-xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-amber-400">
@@ -32,7 +32,7 @@ export const DailyDigestWidget: React.FC<DailyDigestWidgetProps> = ({ cards, onO
                 Spaced Repetition
               </span>
             </h3>
-            <p className="text-[11px] text-slate-400 font-light">
+            <p className="text-[11px] text-slate-300">
               Zihninizde taze tutmak için kütüphanenizden günün öne çıkan kartları.
             </p>
           </div>

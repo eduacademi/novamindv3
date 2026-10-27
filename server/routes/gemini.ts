@@ -1,106 +1,79 @@
 import { Router } from "express";
-import { 
-  categorizeSingleItemWithGemini, 
-  batchCategorizeWithGemini, 
-  generateMindmapWithGemini, 
+import {
+  categorizeSingleItemWithGemini,
+  batchCategorizeWithGemini,
+  generateMindmapWithGemini,
   generateIdeasWithGemini,
-  chatWithBookmarks 
+  chatWithBookmarks,
+  isAiConfigured,
 } from "../services/geminiService";
 import { aiLimiter } from "../middleware/rateLimit";
-import { optionalAuth } from "../middleware/auth";
+import { requireAuth } from "../middleware/auth";
 import { checkAiUsageLimit } from "../middleware/usageLimiter";
 
 const router = Router();
 
-// AI Auto Categorization & Tagging
-router.post("/gemini/categorize", optionalAuth, aiLimiter, checkAiUsageLimit("categorize"), async (req, res, next) => {
+const NO_KEY_ERROR = "AI servisi şu an yapılandırılmamış. Ayarlar'dan kendi Gemini API anahtarını ekleyebilirsin.";
+
+function hasCards(cards: unknown): cards is any[] {
+  return Array.isArray(cards) && cards.length > 0;
+}
+
+router.post("/gemini/categorize", requireAuth, aiLimiter, (req, res, next) => {
+  if (!isAiConfigured(req)) return res.status(503).json({ error: NO_KEY_ERROR });
+  next();
+}, checkAiUsageLimit("categorize"), async (req, res, next) => {
   try {
-    const { items, title, description, note, url, platform } = req.body;
-
-    if (!process.env.GEMINI_API_KEY && !req.headers["x-gemini-api-key"]) {
-      return res.status(400).json({ error: "Gemini API anahtarı bulunamadı. Lütfen Ayarlar sayfasından kendi API anahtarınızı tanımlayın veya Pro pakete geçin." });
+    const { items, title, description, note, url, platform } = req.body || {};
+    if (Array.isArray(items) && items.length > 0) {
+      return res.json({ items: await batchCategorizeWithGemini(req, items.slice(0, 30)) });
     }
-
-    if (items && Array.isArray(items) && items.length > 0) {
-      const categorized = await batchCategorizeWithGemini(req, items);
-      return res.json({ items: categorized });
-    }
-
-    const result = await categorizeSingleItemWithGemini(req, { title, description, note, url, platform });
-    return res.json(result);
-
+    return res.json(await categorizeSingleItemWithGemini(req, { title, description, note, url, platform }));
   } catch (err) {
     next(err);
   }
 });
 
-// AI Mind Map / Knowledge Graph Generator
-router.post("/gemini/mindmap", optionalAuth, aiLimiter, checkAiUsageLimit("mindmap"), async (req, res, next) => {
+router.post("/gemini/mindmap", requireAuth, aiLimiter, (req, res, next) => {
+  if (!hasCards(req.body?.cards)) return res.status(400).json({ error: "Zihin haritası için en az 1 kart gerekli." });
+  if (!isAiConfigured(req)) return res.status(503).json({ error: NO_KEY_ERROR });
+  next();
+}, checkAiUsageLimit("mindmap"), async (req, res, next) => {
   try {
     const { cards } = req.body;
-
-    if (!cards || !Array.isArray(cards) || cards.length === 0) {
-      return res.status(400).json({ error: "Anlamlı mindmap oluşturmak için en az 1 kart gereklidir." });
-    }
-
-    if (!process.env.GEMINI_API_KEY && !req.headers["x-gemini-api-key"]) {
-      return res.status(400).json({ error: "Gemini API anahtarı bulunamadı. Lütfen Ayarlar sayfasından kendi API anahtarınızı tanımlayın veya Pro pakete geçin." });
-    }
-
-    const mindmapRoot = await generateMindmapWithGemini(req, cards);
-
-    return res.json({
-      root: mindmapRoot,
-      generated_at: Date.now(),
-      total_cards_analyzed: cards.length
-    });
-
+    const root = await generateMindmapWithGemini(req, cards);
+    return res.json({ root, generated_at: Date.now(), total_cards_analyzed: cards.length });
   } catch (err) {
     next(err);
   }
 });
 
-// AI Creative Idea Generator ("Fikir Üretici")
-router.post("/gemini/ideas", optionalAuth, aiLimiter, checkAiUsageLimit("ideas"), async (req, res, next) => {
+router.post("/gemini/ideas", requireAuth, aiLimiter, (req, res, next) => {
+  if (!hasCards(req.body?.cards)) return res.status(400).json({ error: "Fikir üretimi için kayıtlı kart bulunamadı." });
+  if (!isAiConfigured(req)) return res.status(503).json({ error: NO_KEY_ERROR });
+  next();
+}, checkAiUsageLimit("ideas"), async (req, res, next) => {
   try {
     const { mode, cards, selectedCardIds, customPrompt } = req.body;
-
-    if (!process.env.GEMINI_API_KEY && !req.headers["x-gemini-api-key"]) {
-      return res.status(400).json({ error: "Gemini API anahtarı bulunamadı. Lütfen Ayarlar sayfasından kendi API anahtarınızı tanımlayın veya Pro pakete geçin." });
-    }
-
-    if (!cards || !Array.isArray(cards) || cards.length === 0) {
-      return res.status(400).json({ error: "Fikir üretimi için kayıtlı kart bulunamadı." });
-    }
-
     const ideas = await generateIdeasWithGemini(req, { mode, cards, selectedCardIds, customPrompt });
     return res.json({ ideas });
-
   } catch (err) {
     next(err);
   }
 });
 
-// AI Chat with Bookmarks (RAG)
-router.post("/gemini/chat", optionalAuth, aiLimiter, async (req, res, next) => {
+router.post("/gemini/chat", requireAuth, aiLimiter, (req, res, next) => {
+  const { query, cards } = req.body || {};
+  if (!query || typeof query !== "string" || query.length > 2000) {
+    return res.status(400).json({ error: "Geçerli bir soru yazmalısın (en fazla 2000 karakter)." });
+  }
+  if (!hasCards(cards)) return res.status(400).json({ error: "Sohbet için kütüphanende en az 1 kart olmalı." });
+  if (!isAiConfigured(req)) return res.status(503).json({ error: NO_KEY_ERROR });
+  next();
+}, checkAiUsageLimit("chat"), async (req, res, next) => {
   try {
-    const { query, cards } = req.body;
-
-    if (!process.env.GEMINI_API_KEY && !req.headers["x-gemini-api-key"]) {
-      return res.status(400).json({ error: "Gemini API anahtarı bulunamadı." });
-    }
-
-    if (!query || typeof query !== "string") {
-      return res.status(400).json({ error: "Soru (query) alanı gereklidir." });
-    }
-
-    if (!cards || !Array.isArray(cards) || cards.length === 0) {
-      return res.status(400).json({ error: "Sohbet edebilmek için kütüphanenizde en az 1 kart bulunmalıdır." });
-    }
-
-    const answer = await chatWithBookmarks(req, { query, cards });
+    const answer = await chatWithBookmarks(req, { query: req.body.query, cards: req.body.cards });
     return res.json({ answer });
-
   } catch (err) {
     next(err);
   }

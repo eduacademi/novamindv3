@@ -1,43 +1,42 @@
 import { Response, NextFunction } from "express";
 import { AuthenticatedRequest } from "../types/index";
 import { getUserSubscriptionFromDb } from "../services/paymentService";
-import { PLAN_LIMITS } from "../types/subscription";
+import { tryConsume, refund } from "../services/usageService";
+import { AiFeature } from "../types/subscription";
+
+const FEATURE_LABELS: Record<AiFeature, string> = {
+  categorize: "günlük AI etiketleme",
+  chat: "günlük AI asistan",
+  mindmap: "aylık zihin haritası",
+  ideas: "aylık fikir üretimi",
+};
 
 /**
- * Middleware that checks if user has remaining quota for AI operations based on their plan
+ * Enforces plan quotas for AI features. Users who bring their own Gemini key (BYOK) are not metered.
  */
-export function checkAiUsageLimit(feature: "categorize" | "mindmap" | "ideas") {
+export function checkAiUsageLimit(feature: AiFeature) {
   return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
-      const userId = req.user?.uid || "dev-anonymous-user";
+      if (req.headers["x-gemini-api-key"]) return next();
+
+      const userId = req.user!.uid;
       const subscription = await getUserSubscriptionFromDb(userId);
-      const limits = PLAN_LIMITS[subscription.plan || "free"];
+      const result = await tryConsume(userId, subscription.plan, feature);
 
-      // If user provided custom Gemini API Key in header, bypass server limits (BYOK model)
-      if (req.headers["x-gemini-api-key"]) {
-        return next();
+      if (!result.allowed) {
+        return res.status(429).json({
+          error: `${FEATURE_LABELS[feature]} hakkın doldu (${result.used}/${result.limit}). Pro pakete geçerek limitini artırabilir veya Ayarlar'dan kendi Gemini anahtarını ekleyebilirsin.`,
+          requiresUpgrade: true,
+          feature,
+          used: result.used,
+          limit: result.limit,
+        });
       }
-
-      // Check specific feature limit
-      if (feature === "mindmap" && limits.maxMonthlyMindmaps !== -1) {
-        // Free user monthly limit check
-        if (limits.maxMonthlyMindmaps <= 0) {
-          return res.status(403).json({
-            error: "Free paket limitine ulaştınız. Mind Map özelliğini sınırsız kullanmak için Pro pakete geçin veya Ayarlar'dan kendi Gemini API anahtarınızı tanımlayın.",
-            requiresUpgrade: true
-          });
-        }
-      }
-
-      if (feature === "ideas" && limits.maxMonthlyIdeas !== -1) {
-        if (limits.maxMonthlyIdeas <= 0) {
-          return res.status(403).json({
-            error: "Fikir Üretici kullanım sınırına ulaşıldı. Pro pakete geçerek sınırsız fikir sentezleyebilirsiniz.",
-            requiresUpgrade: true
-          });
-        }
-      }
-
+      // Failed AI calls should not cost the user quota
+      res.on("finish", () => {
+        if (res.statusCode >= 500) refund(userId, feature).catch(() => {});
+      });
+      res.setHeader("X-Usage-Remaining", result.limit === -1 ? "unlimited" : String(result.limit - result.used));
       next();
     } catch (err) {
       next(err);
